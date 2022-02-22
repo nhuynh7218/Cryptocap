@@ -6,7 +6,7 @@ import styles from '../styles/Home.module.css'
 const Home: NextPage = () => {
   return (
     <div className="text-center">
-      <h1 className="text-yellow-500">Hello World</h1>
+      <h1 className="text-yellow-500">Hello World. CryptoCap.Digital!</h1>
     </div>
   )
 }
