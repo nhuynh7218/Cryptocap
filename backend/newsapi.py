@@ -2,14 +2,13 @@ from newsapi import NewsApiClient
 
 # importing pymongo
 import pymongo
-import urllib.parse
 from pymongo import MongoClient
+import urllib.parse
 
 # Init
-# newsapi = NewsApiClient(api_key='')
-# username = urllib.parse.quote_plus('')
-# password = urllib.parse.quote_plus('')
-
+newsapi = NewsApiClient(api_key='03c5e649e30745138c3c93de33b8ad56')
+username = urllib.parse.quote_plus('cryptocap_ardi')
+password = urllib.parse.quote_plus('cryptocap@news')
 
 # establing connection
 try:
@@ -39,6 +38,7 @@ for post in posts:
   }
   
   print(document)
+  print("\n\n---------\n\n")
   # collection.insert_one(document)
   # print("Title:", post['title'].lower())
   # print("Description:", post['description'])
