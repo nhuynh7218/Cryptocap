@@ -20,8 +20,10 @@ import {
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
 
-const NavLink = ({ children }: { children: ReactNode }) => (
+const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu: CURRENT_MENU, index: number }}) => (
+  
   <Link
+    className = {`${props.currentMenu == props.index ? 'border-2 border-green-500' : 'border-black'}`}
     px={2}
     py={1}
     rounded={'md'}
@@ -29,13 +31,13 @@ const NavLink = ({ children }: { children: ReactNode }) => (
       textDecoration: 'none',
       bg: useColorModeValue('gray.200', 'gray.700'),
     }}
-    href={'#'}>
+    href={`${props.index == 0 ? '/' : props.index == 1 ? '/tokens' : '/'}`}>
     {children}
   </Link>
 );
 export enum CURRENT_MENU {
     NEWS,
-    LIST,
+    TOKENS,
 
 }
 export default function NavBar() {
@@ -47,15 +49,15 @@ export default function NavBar() {
     if (currMenu == currentMenu) { return }
     setMenu(currMenu)
 }
-  const Links = ['News', 'List'];
+  const Links = ['News', 'Tokens'];
   useEffect(() => {
 
     const currRoute = route.route
 
     if (currRoute == "/")
         setCurrentMenu(CURRENT_MENU.NEWS)
-    if (currRoute == "/raffle")
-        setCurrentMenu(CURRENT_MENU.LIST)
+    if (currRoute == "/tokens")
+        setCurrentMenu(CURRENT_MENU.TOKENS)
   
     return () => {
 
@@ -63,17 +65,17 @@ export default function NavBar() {
 }, [route.route])
   return (
     <>
-      <Box boxShadow='xl' bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
+      <Box boxShadow='xl' bg={useColorModeValue('gray.50', 'gray.900')} px={4}>
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
           
           <HStack spacing={8} alignItems={'center'}>
-          <Box>CryptoCap</Box>
+          <Box className={'cursor-pointer'} onClick={() => {route.push('/')}}>CryptoCap</Box>
             <HStack
               as={'nav'}
               spacing={4}
               display={{ base: 'none', md: 'flex' }}>
-              {Links.map((link) => (
-                <NavLink key={link}>{link}</NavLink>
+              {Links.map((link, index) => (
+                <NavLink props={{currentMenu, index}} key={link}>{link}</NavLink>
               ))}
             </HStack>
           </HStack>
