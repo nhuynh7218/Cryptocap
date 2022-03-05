@@ -22,6 +22,20 @@ except:
 db = cluster["frontend"]
 collection = db["news"]
 
+
+document = {
+    "title": 'TITLE',
+    "description": "description",
+    "image": "urlToImage"
+    # "source": post['source']['name'],
+    # "content": post['content'],
+    # "url": post['url'],
+    # "published": post['publishedAt']
+  }
+
+collection.insert_one(document)
+exit()
+
 # /v2/get_everything
 sources = newsapi.get_everything(q='crypto', page=1, page_size=5)
 posts = sources['articles']
@@ -39,7 +53,12 @@ for post in posts:
   }
   
   print(document)
+<<<<<<< Updated upstream
+=======
+  # print("\n\n---------\n\n")
+>>>>>>> Stashed changes
   # collection.insert_one(document)
+  break
   # print("Title:", post['title'].lower())
   # print("Description:", post['description'])
   # print("Image:", post['urlToImage'])
