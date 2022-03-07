@@ -9,19 +9,19 @@ newsapi = NewsApiClient(api_key='03c5e649e30745138c3c93de33b8ad56')
 
 # Create a connection using MongoClient. You can import MongoClient or use pymongo.MongoClient
 client = MongoClient('mongodb+srv://cryptocap:abc123abc@cluster0.go9eq.mongodb.net/frontend?retryWrites=true&w=majority')
+
 # call mongodb func
 db = client['frontend']
-# db = get_database()
 
 # select collection
 collection = db['news']
   
 # /v2/get_everything
-sources = newsapi.get_everything(q='crypto', page=1, page_size=100)
+sources = newsapi.get_everything(q='crypto', page=1, page_size=5)
 posts = sources['articles']
 x=1
 for post in posts:
-    # first document
+    # first post document
     document = {
       "title": post['title'],
       "description": post['description'],
@@ -32,6 +32,7 @@ for post in posts:
       "published": post['publishedAt']
     }
     
+    # check if post exists in the database
     exists = collection.count_documents({ "url": document['url'] }) > 0
     if(exists == False):
         collection.insert_one(document)
