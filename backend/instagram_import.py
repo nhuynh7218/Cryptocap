@@ -15,4 +15,4 @@ for item in insta_scraper.query_media_gen(shared_data):
     # arr.append(item)
     break
 
-print(arr)
+pprint(arr)

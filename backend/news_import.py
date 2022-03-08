@@ -2,16 +2,16 @@ import newsapi
 import pymongo
 import urllib.parse
 from pymongo import MongoClient
-from newsapi import NewsApiClient
+from newsapi.newsapi_client import NewsApiClient
 
 # Init
 newsapi = NewsApiClient(api_key='03c5e649e30745138c3c93de33b8ad56')
 
 # Create a connection using MongoClient. You can import MongoClient or use pymongo.MongoClient
 client = MongoClient('mongodb+srv://cryptocap:abc123abc@cluster0.go9eq.mongodb.net/frontend?retryWrites=true&w=majority')
+
 # call mongodb func
 db = client['frontend']
-# db = get_database()
 
 # select collection
 collection = db['news']
