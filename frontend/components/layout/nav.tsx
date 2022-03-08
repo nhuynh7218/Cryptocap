@@ -19,9 +19,10 @@ import {
 } from '@chakra-ui/react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
+import NextLink from 'next/link'
 
 const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu: CURRENT_MENU, index: number }}) => (
-  
+  <NextLink  href={`${props.index == 0 ? '/' : props.index == 1 ? '/tokens' : '/'}`}>
   <Link
     className = {`${props.currentMenu == props.index ? 'border-2 border-green-500' : 'border-black'}`}
     px={2}
@@ -31,9 +32,10 @@ const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu
       textDecoration: 'none',
       bg: useColorModeValue('gray.200', 'gray.700'),
     }}
-    href={`${props.index == 0 ? '/' : props.index == 1 ? '/tokens' : '/'}`}>
+   >
     {children}
   </Link>
+  </NextLink>
 );
 export enum CURRENT_MENU {
     NEWS,
