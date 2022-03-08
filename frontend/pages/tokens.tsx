@@ -40,5 +40,15 @@ const TokenList: NextPage = () => {
     </div>
   )
 }
+function wait(ms: any) {
+    return new Promise((_, reject) => {
+       setTimeout(() => reject(new Error('timeout succeeded')), ms);
+    });
+ }
+export async function getServerSideProps(context: any) {
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
-export default TokenList
+    return {
+      props: {}, // will be passed to the page component as props
+    }
+  }export default TokenList

@@ -2,7 +2,7 @@ import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ChakraProvider } from '@chakra-ui/react'
 import Layout from '../components/layout'
-import { useRouter } from 'next/router'
+import { Router, useRouter } from 'next/router'
 import React, { useEffect } from 'react'
 import { AppState, APP_STATE } from '../atom'
 import { RecoilRoot, useRecoilState } from 'recoil'
@@ -15,10 +15,10 @@ const SetupLoadingComp = () =>{
   useEffect(() => {
   
     const setLoad = () => {
+      console.log("loading")
       setAppState({appState  : APP_STATE.LOADING, title: '', msg:'' })
     }
     const setNone = () => {
-    
       setAppState({appState  : APP_STATE.NONE, title: '' , msg:'' })
     }
   //   document.addEventListener('visibilitychange', () => { 
@@ -26,10 +26,10 @@ const SetupLoadingComp = () =>{
   //         window.localStorage.removeItem('WALLETCONNECT_DEEPLINK_CHOICE'); 
   //     } 
   // });
-  console.log('fired')
-    router.events.on("routeChangeStart", setLoad);
-    router.events.on("routeChangeComplete", setNone);
-    router.events.on("routeChangeError", setNone);
+  router.events.on('routeChangeStart', setLoad)
+  router.events.on('routeChangeComplete', setNone)
+  router.events.on('routeChangeError', setNone)
+
  
     return () => {
       
@@ -39,19 +39,22 @@ const SetupLoadingComp = () =>{
     <></>
   )
 }
+import dynamic from 'next/dynamic'
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <RecoilRoot>
-
     <ChakraProvider>
+    <RecoilRoot>
     <SetupLoadingComp />
-        <Loader/> 
+    <Loader/> 
+   
+ 
       <Layout>
       <Component {...pageProps} />
       </Layout>
 
-    </ChakraProvider>
+
     </RecoilRoot>
+    </ChakraProvider>
 
   )
 }
