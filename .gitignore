@@ -2,3 +2,4 @@
 
 # python api keys
 /backend/.env
+/backend/.env.example
