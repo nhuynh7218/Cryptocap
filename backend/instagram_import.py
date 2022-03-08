@@ -1,7 +1,7 @@
 from pprint import pprint
 import instagram_scraper
 
-args = {"login_user": "shabanscott", "login_pass": "0muK31Z5S$", "cookiejar":"true"}
+args = {"login_user": "USERNAME", "login_pass": "PASSWORD", "cookiejar":"true"}
 
 insta_scraper = instagram_scraper.InstagramScraper(**args)
 insta_scraper.authenticate_with_login()
