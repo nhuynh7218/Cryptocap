@@ -111,17 +111,18 @@ const SmallNewsCell = () => {
                     <BlogTags tags={['USA', 'LATEST']} marginTop="3" />
                     <Heading fontSize="xl" marginTop="2">
                         <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
-                            Some blog title
+                            Some title
                         </Link>
                     </Heading>
                     <Text as="p" fontSize="md" marginTop="2">
-             {`           Lorem Ipsum is simply dummy text of the printing and typesetting
-                        industry. Lorem Ipsum has been the industry's standard dummy text
-                        ever since the 1500s, when an unknown printer took a galley of
-                        type and scrambled it to make a type specimen book.`}
+                     {` Description Description Description Description Description 
+                     Description Description Description Description Description Description Description 
+                     Description Description Description Description Description Description 
+                     Description Description Description Description Description Description 
+                     Description `}
                     </Text>
                     <BlogAuthor
-                        name="John Doe"
+                        name="Some Name"
                         date={new Date('2021-04-06T19:01:27Z')}
                     />
                 </Box>
