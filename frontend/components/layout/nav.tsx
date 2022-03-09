@@ -21,10 +21,10 @@ import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
 import NextLink from 'next/link'
 
-const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu: CURRENT_MENU, index: number }}) => (
-  <NextLink  href={`${props.index == 0 ? '/' : props.index == 1 ? '/tokens' : '/'}`}>
+const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu: string, index: number, link: string }}) => (
+  <NextLink  href={`${props.index == 0 ? '/' : `/${props.link.toLocaleLowerCase()}`}`}>
   <Link
-    className = {`${props.currentMenu == props.index ? 'border-2 border-green-500' : 'border-black'}`}
+    className = {`${props.currentMenu == props.link.toLocaleLowerCase() ? 'border-2 border-green-500' : 'border-black'}`}
     px={2}
     py={1}
     rounded={'md'}
@@ -37,29 +37,25 @@ const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu
   </Link>
   </NextLink>
 );
-export enum CURRENT_MENU {
-    NEWS,
-    TOKENS,
 
-}
 export default function NavBar() {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [currentMenu, setMenu] = useState(CURRENT_MENU.NEWS)
+  const [currentMenu, setMenu] = useState('')
   const route = useRouter()
-  function setCurrentMenu(currMenu: CURRENT_MENU) {
-    if (currMenu == currentMenu) { return }
-    setMenu(currMenu)
-}
-  const Links = ['News', 'Tokens'];
+
+// make sure link name matches page name. different casing is fine. User == user.
+  const Links = ['News', 'Tokens', 'User'];
   useEffect(() => {
 
     const currRoute = route.route
 
-    if (currRoute == "/")
-        setCurrentMenu(CURRENT_MENU.NEWS)
-    if (currRoute == "/tokens")
-        setCurrentMenu(CURRENT_MENU.TOKENS)
+    if (currRoute == "/"){
+        setMenu('news')
+        return
+    }
+    const routeStripped = currRoute.substring(1)
+    setMenu(routeStripped)
   
     return () => {
 
@@ -77,7 +73,7 @@ export default function NavBar() {
               spacing={4}
               display={{ base: 'none', md: 'flex' }}>
               {Links.map((link, index) => (
-                <NavLink props={{currentMenu, index}} key={link}>{link}</NavLink>
+                <NavLink props={{currentMenu, index, link}} key={link}>{link}</NavLink>
               ))}
             </HStack>
           </HStack>
