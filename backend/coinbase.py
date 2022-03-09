@@ -1,5 +1,15 @@
-from .oauth import BaseOAuth2
+from oauth import BaseOAuth2
+import os
+from dotenv import load_dotenv
 
+# load dotenv lib
+load_dotenv()
+
+# Coinbase config
+CB_Client_ID = os.getenv('CB_Client_ID')
+CB_Client_Secret = os.getenv('CB_Client_Secret')
+
+print(CB_Client_ID)
 
 class CoinbaseOAuth2(BaseOAuth2):
     name = 'coinbase'
@@ -29,5 +39,6 @@ class CoinbaseOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://api.coinbase.com/v2/user',
-                headers={'Authorization': 'Bearer ' + access_token})
+        return self.get_json('https://api.coinbase.com/v2/user', headers={
+            'Authorization': 'Bearer ' + access_token
+        })
