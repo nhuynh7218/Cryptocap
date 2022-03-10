@@ -25,9 +25,9 @@ db = client['frontend']
 
 # select collection
 collection = db['news']
-  
+
 # /v2/get_everything
-sources = newsapi.get_everything(q='crypto', page=1, page_size=5)
+sources = newsapi.get_everything(q='crypto', page=1, page_size=10)
 posts = sources['articles']
 x=1
 for post in posts:
