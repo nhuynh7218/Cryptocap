@@ -1,9 +1,29 @@
 import React from "react";
 import NewsLetter from "./news-letter";
+
+import {
+    Box,
+    Heading,
+    Link,
+    Image,
+    Text,
+    Divider,
+    HStack,
+    Tag,
+    Wrap,
+    WrapItem,
+    SpaceProps,
+    useColorModeValue,
+    Container,
+    VStack,
+    useColorMode,
+} from '@chakra-ui/react';
 function CardCell(props: { newsArticle: any }) {
+    const { colorMode, toggleColorMode } = useColorMode();
+
     const { newsArticle } = props
     return (
-        <div className="flex justify-center hover:bg-green-300 delay-50 duration-100 bg-gray-400 text-black p-5 rounded-lg w-60 group shadow-2xl ">
+        <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 ' } flex justify-center delay-50 duration-100   p-5 rounded-lg w-72 group shadow-2xl`}>
 
             <Link href={`/`}>
 
@@ -12,7 +32,7 @@ function CardCell(props: { newsArticle: any }) {
                     <h1 className="font-bold text-lg  mt-5">{newsArticle.title}</h1>
                     <h1 className="font-bold text-lg mt-5">{newsArticle.author}</h1>
 
-                    <h1 className="font-bold text-sm  ">{`${newsArticle.Description} `}</h1>
+                    <h1 className="font-bold text-sm  line-clamp-4 ">{`${newsArticle.description} `}</h1>
                     <h1 className="font-bold text-sm  ">{`tags`}</h1>
 
                 </a>
@@ -91,6 +111,7 @@ function BigNewsCell() {
                     </Link>
                 </Heading>
                 <Text
+                className=" line-clamp-6"
                     as="p"
                     marginTop="2"
                     color={useColorModeValue('gray.700', 'gray.200')}
@@ -106,52 +127,31 @@ function BigNewsCell() {
             </Box>
         </Box>)
 }
-const SmallNewsCell = () => {
+
+interface IBlogTags {
+    tags: Array<string>;
+    marginTop?: SpaceProps['marginTop'];
+}
+
+const BlogTags: React.FC<IBlogTags> = (props) => {
     return (
-
-        <Wrap spacing="30px" marginTop="5">
-            <WrapItem width={{ base: '100%', sm: '45%', md: '45%', lg: '30%' }}>
-                <Box w="100%">
-                    <Box borderRadius="lg" overflow="hidden">
-                        <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
-                            <Image
-                                transform="scale(1.0)"
-                                src={
-                                    'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80'
-                                }
-                                alt="some text"
-                                objectFit="contain"
-                                width="100%"
-                                transition="0.3s ease-in-out"
-                                _hover={{
-                                    transform: 'scale(1.05)',
-                                }}
-                            />
-                        </Link>
-                    </Box>
-                    <BlogTags tags={['USA', 'LATEST']} marginTop="3" />
-                    <Heading fontSize="xl" marginTop="2">
-                        <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
-                            Some title
-                        </Link>
-                    </Heading>
-                    <Text as="p" fontSize="md" marginTop="2">
-                        {` Description Description Description Description Description 
-                     Description Description Description Description Description Description Description 
-                     Description Description Description Description Description Description 
-                     Description Description Description Description Description Description 
-                     Description `}
-                    </Text>
-                    <BlogAuthor
-                        name="Some Name"
-                        date={new Date('2021-04-06T19:01:27Z')}
-                    />
-                </Box>
-            </WrapItem>
-        </Wrap>
-
+        <HStack spacing={2} marginTop={props.marginTop}>
+            {props.tags.map((tag) => {
+                return (
+                    <Tag size={'md'} variant="solid" colorScheme="orange" key={tag}>
+                        {tag}
+                    </Tag>
+                );
+            })}
+        </HStack>
     );
 };
+
+interface BlogAuthorProps {
+    date: Date;
+    name: string;
+}
+
 
 interface NewsArticle {
     author: string,
@@ -164,7 +164,7 @@ function Index() {
     const oneArticle: NewsArticle = {
         author: 'Some Name',
         date: new Date(),
-        description: 'akljsd ',
+        description: 'akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd',
         image: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80',
         tags: ['BTC', 'USA']
 
@@ -172,7 +172,7 @@ function Index() {
     }
     const newsList = () => {
         var p = []
-        for (var i = 0; i < 20; i++) {
+        for (var i = 0; i < 5; i++) {
             p.push(oneArticle)
         }
         return p
@@ -186,14 +186,22 @@ function Index() {
                 <BigNewsCell />
             </div>
 
-            <Container maxW={'7xl'} p="12">
+            <div  >
 
                 <Heading as="h2" marginTop="5">
                     Latest articles
                 </Heading>
                 <Divider marginTop="5" />
-                <SmallNewsCell />
-            </Container>
+                <div className={' grid  gap-4 grid-cols-2 md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
+                {
+                    newsList().map((val, index) => {
+                        return (
+                            <CardCell newsArticle={val} key={index} />
+                        )
+                    })
+                }
+            </div>
+            </div>
 
 
 
@@ -221,46 +229,6 @@ function Index() {
 export default Index
 
 
-import {
-    Box,
-    Heading,
-    Link,
-    Image,
-    Text,
-    Divider,
-    HStack,
-    Tag,
-    Wrap,
-    WrapItem,
-    SpaceProps,
-    useColorModeValue,
-    Container,
-    VStack,
-} from '@chakra-ui/react';
-
-interface IBlogTags {
-    tags: Array<string>;
-    marginTop?: SpaceProps['marginTop'];
-}
-
-const BlogTags: React.FC<IBlogTags> = (props) => {
-    return (
-        <HStack spacing={2} marginTop={props.marginTop}>
-            {props.tags.map((tag) => {
-                return (
-                    <Tag size={'md'} variant="solid" colorScheme="orange" key={tag}>
-                        {tag}
-                    </Tag>
-                );
-            })}
-        </HStack>
-    );
-};
-
-interface BlogAuthorProps {
-    date: Date;
-    name: string;
-}
 
 
 
