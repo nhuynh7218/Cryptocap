@@ -30,12 +30,12 @@ for user in userID:
 # Each Tweet object has default id and text fields
     for tweet in tweets:
         document = {
-            "Username" : user,
-            "tweetID" : tweet.id, 
-            "text" : tweet.text,
+            "source" : user,
+            "content" : tweet.text,
+            "image" : tweet.attachments,
             "author ID": tweet.author_id,
-            "created at": tweet.created_at,
-            "URL": "https://twitter.com/"+user+"/status/"+(str(tweet.id))
+            "published": tweet.created_at,
+            "url": "https://twitter.com/"+user+"/status/"+(str(tweet.id))
         }
         print(document)
         print("\n\n---------\n\n")
