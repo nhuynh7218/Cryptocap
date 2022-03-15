@@ -1,34 +1,22 @@
 import React from "react";
-import NewsLetter from "./news-letter";
+import {Box,Heading,Link,Image,Text,Divider,HStack,Tag,SpaceProps,useColorModeValue,useColorMode } from '@chakra-ui/react';
+import { ArticleInfo } from "../../interfaces/get";
 
-import {
-    Box,
-    Heading,
-    Link,
-    Image,
-    Text,
-    Divider,
-    HStack,
-    Tag,
-    Wrap,
-    WrapItem,
-    SpaceProps,
-    useColorModeValue,
-    Container,
-    VStack,
-    useColorMode,
-} from '@chakra-ui/react';
-function CardCell(props: { newsArticle: any }) {
+
+function NewsCardCell(props: { newsArticle: ArticleInfo }) {
     const { colorMode, toggleColorMode } = useColorMode();
 
     const { newsArticle } = props
     return (
-        <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 ' } flex justify-center delay-50 duration-100   p-5 rounded-lg w-72 group shadow-2xl`}>
+        <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 '} flex justify-center delay-50 duration-100   p-5 rounded-lg w-40 md:w-60 lg:w-72 group shadow-2xl`}>
 
-            <Link href={`/`}>
+            <Link href={`/article/${props.newsArticle.id}`}>
 
                 <a className="" >
-                    <Image width={250} height={200} src={newsArticle.image} className=" shadow-2xl  rounded  hover:scale-105 duration-500 transition-all"></Image>
+                
+                    <Image src={newsArticle.image} className=" shadow-2xl rounded hover:scale-105 duration-500 transition-all"></Image>
+
+               
                     <h1 className="font-bold text-lg  mt-5">{newsArticle.title}</h1>
                     <h1 className="font-bold text-lg mt-5">{newsArticle.author}</h1>
 
@@ -41,7 +29,7 @@ function CardCell(props: { newsArticle: any }) {
         </div>
     )
 }
-const BlogAuthor: React.FC<BlogAuthorProps> = (props) => {
+const BlogAuthor = (props : {name: string, date: Date}) => {
     return (
         <HStack marginTop="2" spacing="2" display="flex" alignItems="center">
             <Image
@@ -56,7 +44,7 @@ const BlogAuthor: React.FC<BlogAuthorProps> = (props) => {
         </HStack>
     );
 };
-function BigNewsCell() {
+function BigNewsCell(props: { newsArticle: ArticleInfo }) {
 
     return (
         <Box
@@ -75,7 +63,7 @@ function BigNewsCell() {
                     zIndex="2"
                     marginLeft={{ base: '0', sm: '5%' }}
                     marginTop="5%">
-                    <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                    <Link href={`/article/${props.newsArticle.id}`} textDecoration="none" _hover={{ textDecoration: 'none' }}>
                         <Image
                             borderRadius="lg"
                             src={
@@ -111,7 +99,7 @@ function BigNewsCell() {
                     </Link>
                 </Heading>
                 <Text
-                className=" line-clamp-6"
+                    className=" line-clamp-6"
                     as="p"
                     marginTop="2"
                     color={useColorModeValue('gray.700', 'gray.200')}
@@ -153,15 +141,14 @@ interface BlogAuthorProps {
 }
 
 
-interface NewsArticle {
-    author: string,
-    date: Date,
-    description: string,
-    image: string,
-    tags: string[]
-}
+
 function Index() {
-    const oneArticle: NewsArticle = {
+    const oneArticle: ArticleInfo = {
+        clicks: 88,
+        id: 'jdhf872f',
+        source: 'Twitter',
+        title: 'BTC Crashed',
+        votes: 76,
         author: 'Some Name',
         date: new Date(),
         description: 'akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd',
@@ -178,29 +165,30 @@ function Index() {
         return p
     }
     return (
-        <div className={`flex flex-col justify-center items-center`}>
+        <div className={`flex flex-col justify-center items-center overflow-y-hidden`}>
 
 
             <div className={`flex flex-col px-6 md:px-12`}>
                 <Heading className={`text-center pt-4`} as="h1">Daily Feature</Heading>
-                <BigNewsCell />
+                <BigNewsCell newsArticle={oneArticle}/>
             </div>
 
-            <div  >
+            <div>
 
-                <Heading as="h2" marginTop="5">
-                    Latest articles
-                </Heading>
+                <div className=" flex flex-row pt-6">
+                    <h1 className="font-black text-3xl px-4">Latest articles</h1>
+                    <button className=" font-normal text-xs pl-2 animate-bounce text-purple-500 hover:underline">More</button>
+                </div>
                 <Divider marginTop="5" />
-                <div className={' grid  gap-4 grid-cols-2 md:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
-                {
-                    newsList().map((val, index) => {
-                        return (
-                            <CardCell newsArticle={val} key={index} />
-                        )
-                    })
-                }
-            </div>
+                <div className={' grid  gap-4 grid-cols-2 sm:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
+                    {
+                        newsList().map((val, index) => {
+                            return (
+                                <NewsCardCell newsArticle={val} key={index} />
+                            )
+                        })
+                    }
+                </div>
             </div>
 
 
@@ -209,17 +197,17 @@ function Index() {
                 <h1 className={'font-black text-xl'}>Discover</h1>
             </div>
 
-           <div className="flex justify-center">
-           <div className={' grid px-2 sm:px-0 gap-4 grid-cols-2 md:grid-cols-3   lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
-                {
-                    newsList().map((val, index) => {
-                        return (
-                            <CardCell newsArticle={val} key={index} />
-                        )
-                    })
-                }
+            <div className="flex justify-center">
+                <div className={' grid px-2 sm:px-0 gap-4 grid-cols-2 md:grid-cols-3   lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
+                    {
+                        newsList().map((val, index) => {
+                            return (
+                                <NewsCardCell newsArticle={val} key={index} />
+                            )
+                        })
+                    }
+                </div>
             </div>
-           </div>
 
 
         </div>
