@@ -1,7 +1,7 @@
 import tweepy
 from tweepy import OAuthHandler
 import pandas as pd
-import json
+
 
 #authenticate API
 consumer_key = 'UCceBXpGlkXluwQKV5nCkfG5m'
