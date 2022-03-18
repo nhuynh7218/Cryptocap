@@ -1,6 +1,5 @@
-import os, pymongo, urllib.parse, datetime, instagram_scraper, secrets
+import os, pymongo, datetime, instagram_scraper, secrets
 from dotenv import load_dotenv
-from pprint import pprint
 from pymongo import MongoClient
 
 # load dotenv lib
@@ -26,18 +25,27 @@ db = client['frontend']
 # select collection
 collection = db['news']
 
+# create a username array
 usernames = [IG_USER1, IG_USER2, IG_USER3]
+
+# select a random username from array
 ig_username = secrets.choice(usernames)
 args = {"login_user": ig_username, "login_pass": ig_pass, "cookiejar":"true"}
 
+# pass arhs and authticate login
 insta_scraper = instagram_scraper.InstagramScraper(**args)
 insta_scraper.authenticate_with_login()
+
+# select instagram username that we are going to scrap data from
 shared_data = insta_scraper.get_shared_data_userinfo(username='thecryptograph')
 
 x=1
 for item in insta_scraper.query_media_gen(shared_data):
     # first document
+    # scrapes the content/caption
     caption_text = item['edge_media_to_caption']['edges'][0]['node']['text']
+    
+    # download the instagram post media, due to link expiring
     post_image = insta_scraper.download(item, 'cdn')
     document = {
       "title": caption_text[:80],
@@ -49,6 +57,7 @@ for item in insta_scraper.query_media_gen(shared_data):
       "published": datetime.datetime.fromtimestamp(item['taken_at_timestamp'])
     }
 
+    # check if post exists in the mongodb 
     exists = collection.count_documents({ "url": document['url'] }) > 0
     if(exists == False):
         collection.insert_one(document)
@@ -59,5 +68,4 @@ for item in insta_scraper.query_media_gen(shared_data):
 
     if(x==10):
         break
-
     # print(document)
