@@ -2,6 +2,8 @@ from oauth import BaseOAuth2
 import os
 from dotenv import load_dotenv
 
+from coinbase.wallet.client import OAuthClient
+
 # load dotenv lib
 load_dotenv()
 

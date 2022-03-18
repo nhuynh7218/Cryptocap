@@ -1,4 +1,4 @@
-import os, newsapi, pymongo, urllib.parse, datetime
+import os, newsapi, pymongo, datetime
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from newsapi.newsapi_client import NewsApiClient
@@ -25,13 +25,15 @@ db = client['frontend']
 
 # select collection
 collection = db['news']
-  
-# /v2/get_everything
-sources = newsapi.get_everything(q='crypto', page=1, page_size=5)
+
+# /v2/get_everything, and select articles
+sources = newsapi.get_everything(q='crypto', page=1, page_size=10)
 posts = sources['articles']
 x=1
+# loop through the posts array (10)
 for post in posts:
     # first document
+    # format date
     published_date = datetime.datetime.strptime(post['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")
     document = {
       "title": post['title'],
@@ -43,6 +45,7 @@ for post in posts:
       "published": published_date
     }
 
+    # check if post exists in the mongodb 
     exists = collection.count_documents({ "url": document['url'] }) > 0
     if(exists == False):
         collection.insert_one(document)
@@ -50,12 +53,3 @@ for post in posts:
         x+=1
     else:
         print("\n News already imported. Skipped.")
-
-    # print("Title:", post['title'].lower())
-    # print("Description:", post['description'])
-    # print("Image:", post['urlToImage'])
-    # print("Published:", post['publishedAt'])
-    # print("Source:", post['source']['name'])
-    # print("Content:", post['content'])
-    # print('URL: ', post['url'])
-    # break
