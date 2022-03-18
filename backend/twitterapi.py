@@ -1,6 +1,8 @@
 import tweepy
 from tweepy import OAuthHandler
 import pandas as pd
+import pymongo
+from pymongo import MongoClient
 
 
 #authenticate API
