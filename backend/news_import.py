@@ -51,6 +51,7 @@ for post in posts:
     else:
         print("\n News already imported. Skipped.")
 
+
     # print("Title:", post['title'].lower())
     # print("Description:", post['description'])
     # print("Image:", post['urlToImage'])
