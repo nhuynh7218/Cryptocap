@@ -57,5 +57,6 @@ for item in insta_scraper.query_media_gen(shared_data):
     else:
         print("\n IG News already imported. Skipped.")
 
+    if(x==10):
+        break
     # print(document)
-    break
