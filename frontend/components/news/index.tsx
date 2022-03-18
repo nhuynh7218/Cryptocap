@@ -166,15 +166,11 @@ function Index() {
     }
     return (
         <div className={`flex flex-col justify-center items-center overflow-y-hidden`}>
-
-
             <div className={`flex flex-col px-6 md:px-12`}>
                 <Heading className={`text-center pt-4`} as="h1">Daily Feature</Heading>
                 <BigNewsCell newsArticle={oneArticle}/>
             </div>
-
             <div>
-
                 <div className=" flex flex-row pt-6">
                     <h1 className="font-black text-3xl px-4">Latest articles</h1>
                     <button className=" font-normal text-xs pl-2 animate-bounce text-purple-500 hover:underline">More</button>
@@ -191,8 +187,6 @@ function Index() {
                 </div>
             </div>
 
-
-
             <div className={`flex flex-row`}>
                 <h1 className={'font-black text-xl'}>Discover</h1>
             </div>
@@ -208,8 +202,6 @@ function Index() {
                     }
                 </div>
             </div>
-
-
         </div>
     )
 }
