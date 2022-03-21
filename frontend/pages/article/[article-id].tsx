@@ -1,10 +1,9 @@
 import React from "react";
+import Article from "../../components/news/article";
 
 function ArticleInfo(props : {articleID:string}) {
     return (
-        <div>
-            {props.articleID}
-        </div>
+        <Article/>
     )
 }
 export async function getServerSideProps(ctx: {params: any, req : Request, res: Response}) {
