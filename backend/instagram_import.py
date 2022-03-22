@@ -39,16 +39,20 @@ insta_scraper.authenticate_with_login()
 # select instagram username that we are going to scrap data from
 shared_data = insta_scraper.get_shared_data_userinfo(username='thecryptograph')
 
+# first document
 x=1
 for item in insta_scraper.query_media_gen(shared_data):
-    # first document
     # scrapes the content/caption
     caption_text = item['edge_media_to_caption']['edges'][0]['node']['text']
-    
+
+    # split caption if new line is found
+    title = caption_text
+    title = title.split('\n')
+
     # download the instagram post media, due to link expiring
     post_image = insta_scraper.download(item, 'cdn')
     document = {
-      "title": caption_text[:80],
+      "title": title[0][:80],
       "description": caption_text[:260] + "...",
       "image": "https://cdn.crypto.ardi.dev/" + post_image[0],
       "source": "TheCryptoGraph",
