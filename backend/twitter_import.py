@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # load dotenv lib
 load_dotenv()
 
-#authenticate API
+# authenticate API
 consumer_key = os.getenv('t_consumer_key')
 consumer_secret = os.getenv('t_consumer_secret')
 bearer_token = os.getenv('t_bearer_token')
