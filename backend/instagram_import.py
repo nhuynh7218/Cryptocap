@@ -36,27 +36,23 @@ args = {"login_user": ig_username, "login_pass": ig_pass, "cookiejar":"true"}
 insta_scraper = instagram_scraper.InstagramScraper(**args)
 insta_scraper.authenticate_with_login()
 
-# sharecrypto / videos mostly, do not include *Sponsored* and posts less than 200~ char. (in-progress)
-# thecryptograph
-
 # select instagram username that we are going to scrap data from
 shared_data = insta_scraper.get_shared_data_userinfo(username='thecryptograph')
 
 # first document
 x=1
 for item in insta_scraper.query_media_gen(shared_data):
-    if(x==10):
-        break
-    # grabes the content/caption
+    # scrapes the content/caption
     caption_text = item['edge_media_to_caption']['edges'][0]['node']['text']
 
-    # download media 
-    post_image = insta_scraper.download(item, 'cdn')
+    # split caption if new line is found
+    title = caption_text
+    title = title.split('\n')
 
-    # split caption by new line
-    titles = caption_text.split('\n')
+    # download the instagram post media, due to link expiring
+    post_image = insta_scraper.download(item, 'cdn')
     document = {
-      "title": titles[0][:80],
+      "title": title[0][:80],
       "description": caption_text[:260] + "...",
       "image": "https://cdn.crypto.ardi.dev/" + post_image[0],
       "source": "TheCryptoGraph",
@@ -65,14 +61,15 @@ for item in insta_scraper.query_media_gen(shared_data):
       "published": datetime.datetime.fromtimestamp(item['taken_at_timestamp'])
     }
 
-    # check if post exists in the db
+    # check if post exists in the mongodb 
     exists = collection.count_documents({ "url": document['url'] }) > 0
     if(exists == False):
         collection.insert_one(document)
         print("\n Imported ",x, " - ", document['url'], "\n")
-
+        x+=1
     else:
         print("\n IG News already imported. Skipped.")
-    
-    x+=1
+
+    if(x==10):
+        break
     # print(document)
