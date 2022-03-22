@@ -1,18 +1,26 @@
 import React from "react";
-import NewsLetter from "./news-letter";
-function CardCell(props: { newsArticle: any }) {
+import {Box,Heading,Link,Image,Text,Divider,HStack,Tag,SpaceProps,useColorModeValue,useColorMode } from '@chakra-ui/react';
+import { ArticleInfo } from "../../interfaces/get";
+
+
+function NewsCardCell(props: { newsArticle: ArticleInfo }) {
+    const { colorMode, toggleColorMode } = useColorMode();
+
     const { newsArticle } = props
     return (
-        <div className="flex justify-center hover:bg-green-300 delay-50 duration-100 bg-gray-400 text-black p-5 rounded-lg w-60 group shadow-2xl ">
+        <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 '} flex justify-center delay-50 duration-100   p-5 rounded-lg w-40 md:w-60 lg:w-72 group shadow-2xl`}>
 
-            <Link href={`/`}>
+            <Link href={`/article/${props.newsArticle.id}`}>
 
                 <a className="" >
-                    <Image width={250} height={200} src={newsArticle.image} className=" shadow-2xl  rounded  hover:scale-105 duration-500 transition-all"></Image>
+                
+                    <Image src={newsArticle.image} className=" shadow-2xl rounded hover:scale-105 duration-500 transition-all"></Image>
+
+               
                     <h1 className="font-bold text-lg  mt-5">{newsArticle.title}</h1>
                     <h1 className="font-bold text-lg mt-5">{newsArticle.author}</h1>
 
-                    <h1 className="font-bold text-sm  ">{`${newsArticle.Description} `}</h1>
+                    <h1 className="font-bold text-sm  line-clamp-4 ">{`${newsArticle.description} `}</h1>
                     <h1 className="font-bold text-sm  ">{`tags`}</h1>
 
                 </a>
@@ -21,7 +29,7 @@ function CardCell(props: { newsArticle: any }) {
         </div>
     )
 }
-const BlogAuthor: React.FC<BlogAuthorProps> = (props) => {
+const BlogAuthor = (props : {name: string, date: Date}) => {
     return (
         <HStack marginTop="2" spacing="2" display="flex" alignItems="center">
             <Image
@@ -36,7 +44,7 @@ const BlogAuthor: React.FC<BlogAuthorProps> = (props) => {
         </HStack>
     );
 };
-function BigNewsCell() {
+function BigNewsCell(props: { newsArticle: ArticleInfo }) {
 
     return (
         <Box
@@ -55,7 +63,7 @@ function BigNewsCell() {
                     zIndex="2"
                     marginLeft={{ base: '0', sm: '5%' }}
                     marginTop="5%">
-                    <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                    <Link href={`/article/${props.newsArticle.id}`} textDecoration="none" _hover={{ textDecoration: 'none' }}>
                         <Image
                             borderRadius="lg"
                             src={
@@ -91,6 +99,7 @@ function BigNewsCell() {
                     </Link>
                 </Heading>
                 <Text
+                    className=" line-clamp-6"
                     as="p"
                     marginTop="2"
                     color={useColorModeValue('gray.700', 'gray.200')}
@@ -106,137 +115,6 @@ function BigNewsCell() {
             </Box>
         </Box>)
 }
-const SmallNewsCell = () => {
-    return (
-
-        <Wrap spacing="30px" marginTop="5">
-            <WrapItem width={{ base: '100%', sm: '45%', md: '45%', lg: '30%' }}>
-                <Box w="100%">
-                    <Box borderRadius="lg" overflow="hidden">
-                        <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
-                            <Image
-                                transform="scale(1.0)"
-                                src={
-                                    'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80'
-                                }
-                                alt="some text"
-                                objectFit="contain"
-                                width="100%"
-                                transition="0.3s ease-in-out"
-                                _hover={{
-                                    transform: 'scale(1.05)',
-                                }}
-                            />
-                        </Link>
-                    </Box>
-                    <BlogTags tags={['USA', 'LATEST']} marginTop="3" />
-                    <Heading fontSize="xl" marginTop="2">
-                        <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
-                            Some title
-                        </Link>
-                    </Heading>
-                    <Text as="p" fontSize="md" marginTop="2">
-                        {` Description Description Description Description Description 
-                     Description Description Description Description Description Description Description 
-                     Description Description Description Description Description Description 
-                     Description Description Description Description Description Description 
-                     Description `}
-                    </Text>
-                    <BlogAuthor
-                        name="Some Name"
-                        date={new Date('2021-04-06T19:01:27Z')}
-                    />
-                </Box>
-            </WrapItem>
-        </Wrap>
-
-    );
-};
-
-interface NewsArticle {
-    author: string,
-    date: Date,
-    description: string,
-    image: string,
-    tags: string[]
-}
-function Index() {
-    const oneArticle: NewsArticle = {
-        author: 'Some Name',
-        date: new Date(),
-        description: 'akljsd ',
-        image: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80',
-        tags: ['BTC', 'USA']
-
-
-    }
-    const newsList = () => {
-        var p = []
-        for (var i = 0; i < 20; i++) {
-            p.push(oneArticle)
-        }
-        return p
-    }
-    return (
-        <div className={`flex flex-col justify-center items-center`}>
-
-
-            <div className={`flex flex-col px-6 md:px-12`}>
-                <Heading className={`text-center pt-4`} as="h1">Daily Feature</Heading>
-                <BigNewsCell />
-            </div>
-
-            <Container maxW={'7xl'} p="12">
-
-                <Heading as="h2" marginTop="5">
-                    Latest articles
-                </Heading>
-                <Divider marginTop="5" />
-                <SmallNewsCell />
-            </Container>
-
-
-
-            <div className={`flex flex-row`}>
-                <h1 className={'font-black text-xl'}>Discover</h1>
-            </div>
-
-           <div className="flex justify-center">
-           <div className={' grid px-2 sm:px-0 gap-4 grid-cols-2 md:grid-cols-3   lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
-                {
-                    newsList().map((val, index) => {
-                        return (
-                            <CardCell newsArticle={val} key={index} />
-                        )
-                    })
-                }
-            </div>
-           </div>
-
-
-        </div>
-    )
-}
-
-export default Index
-
-
-import {
-    Box,
-    Heading,
-    Link,
-    Image,
-    Text,
-    Divider,
-    HStack,
-    Tag,
-    Wrap,
-    WrapItem,
-    SpaceProps,
-    useColorModeValue,
-    Container,
-    VStack,
-} from '@chakra-ui/react';
 
 interface IBlogTags {
     tags: Array<string>;
@@ -261,6 +139,76 @@ interface BlogAuthorProps {
     date: Date;
     name: string;
 }
+
+
+
+function Index() {
+    const oneArticle: ArticleInfo = {
+        clicks: 88,
+        id: 'jdhf872f',
+        source: 'Twitter',
+        title: 'BTC Crashed',
+        votes: 76,
+        author: 'Some Name',
+        date: new Date(),
+        description: 'akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd',
+        image: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80',
+        tags: ['BTC', 'USA']
+
+
+    }
+    const newsList = () => {
+        var p = []
+        for (var i = 0; i < 5; i++) {
+            p.push(oneArticle)
+        }
+        return p
+    }
+    return (
+        <div className={`flex flex-col justify-center items-center overflow-y-hidden`}>
+            <div className={`flex flex-col px-6 md:px-12`}>
+                <Heading className={`text-center pt-4`} as="h1">Daily Feature</Heading>
+                <BigNewsCell newsArticle={oneArticle}/>
+            </div>
+            <div>
+                <div className=" flex flex-row pt-6">
+                    <h1 className="font-black text-3xl px-4">Latest articles</h1>
+                    <button className=" font-normal text-xs pl-2 animate-bounce text-purple-500 hover:underline">More</button>
+                </div>
+                <Divider marginTop="5" />
+                <div className={' grid  gap-4 grid-cols-2 sm:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
+                    {
+                        newsList().map((val, index) => {
+                            return (
+                                <NewsCardCell newsArticle={val} key={index} />
+                            )
+                        })
+                    }
+                </div>
+            </div>
+
+            <div className={`flex flex-row`}>
+                <h1 className={'font-black text-xl'}>Discover</h1>
+            </div>
+
+            <div className="flex justify-center">
+                <div className={' grid px-2 sm:px-0 gap-4 grid-cols-2 md:grid-cols-3   lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
+                    {
+                        newsList().map((val, index) => {
+                            return (
+                                <NewsCardCell newsArticle={val} key={index} />
+                            )
+                        })
+                    }
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Index
+
+
 
 
 
