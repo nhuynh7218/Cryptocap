@@ -26,9 +26,9 @@ import {
 
     return (
         // here you see I am conbining tailwind css with charkaUI built in hooks. colormode 
-      <Box className={`${colorMode == 'dark' ? 'bg-yellow-800' : 'bg-yellow-400 '} w-full relative bottom-0 transition-all`}>
+      <Box className={`${colorMode == 'dark' ? 'bg-yellow-800' : 'bg-yellow-400 '} w-full relative  transition-all `}>
         <Container as={Stack} maxW={'6xl'} py={10}>
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={8}>
+          <SimpleGrid columns={{ base: 2, sm: 2, md: 4 }} spacing={8}>
             <Stack align={'flex-start'}>
               <ListHeader>Services</ListHeader>
               {/* <Link href={'#'}>Overview</Link>
