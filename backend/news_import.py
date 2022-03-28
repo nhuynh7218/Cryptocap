@@ -13,6 +13,7 @@ NewsAPI_KEY = os.getenv('NEWSAPI_KEY')
 MongoDB_USER = os.getenv('MongoDB_USER')
 MongoDB_PASS = os.getenv('MongoDB_PASS')
 MongoDB_CLUSTER = os.getenv('MongoDB_CLUSTER')
+MongoDB_NAME = os.getenv('MongoDB_NAME')
 
 # Init
 newsapi = NewsApiClient(api_key=NewsAPI_KEY)
@@ -21,7 +22,7 @@ newsapi = NewsApiClient(api_key=NewsAPI_KEY)
 client = MongoClient('mongodb+srv://' + MongoDB_USER + ':' + MongoDB_PASS + '@' + MongoDB_CLUSTER + '/frontend?retryWrites=true&w=majority')
 
 # call mongodb func
-db = client['frontend']
+db = client[MongoDB_NAME]
 
 # select collection
 collection = db['news']
