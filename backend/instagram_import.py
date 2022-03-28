@@ -15,12 +15,13 @@ ig_pass = os.getenv('IG_PASS')
 MongoDB_USER = os.getenv('MongoDB_USER')
 MongoDB_PASS = os.getenv('MongoDB_PASS')
 MongoDB_CLUSTER = os.getenv('MongoDB_CLUSTER')
+MongoDB_NAME = os.getenv('MongoDB_NAME')
 
 # Create a connection using MongoClient. You can import MongoClient or use pymongo.MongoClient
 client = MongoClient('mongodb+srv://' + MongoDB_USER + ':' + MongoDB_PASS + '@' + MongoDB_CLUSTER + '/frontend?retryWrites=true&w=majority')
 
 # call mongodb func
-db = client['frontend']
+db = client[MongoDB_NAME]
 
 # select collection
 collection = db['news']
