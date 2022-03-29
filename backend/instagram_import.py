@@ -55,7 +55,7 @@ for item in insta_scraper.query_media_gen(shared_data):
     document = {
       "title": title[0][:80],
       "description": caption_text[:260] + "...",
-      "image": "https://cdn.crypto.ardi.dev/" + post_image[0],
+      "image": "https://cdn.cryptocap.digital/" + post_image[0],
       "source": "TheCryptoGraph",
       "content": caption_text,
       "url": "https://www.instagram.com/p/" + item['shortcode'],
