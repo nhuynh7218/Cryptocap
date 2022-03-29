@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from flask_cors import CORS
 # from flask import jsonify
 from flask import request
 from flask_pymongo import PyMongo
@@ -16,6 +17,8 @@ MongoDB_CLUSTER = os.getenv('MongoDB_CLUSTER')
 MongoDB_NAME = os.getenv('MongoDB_NAME')
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
 # Create a connection using flask_pymongo.
 app.config['MONGO_DBNAME'] = MongoDB_NAME
 app.config['MONGO_URI'] = 'mongodb+srv://' + MongoDB_USER + ':' + MongoDB_PASS + '@' + MongoDB_CLUSTER + '/frontend?retryWrites=true&w=majority'
