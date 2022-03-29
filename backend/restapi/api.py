@@ -33,17 +33,43 @@ def index():
     return "Hello CryptoCap Fellows!"
 
 ''' -----------  /news  ----------- '''
+'''
+    Methods related to the News endpoint is written here.
+    GET:
+        Input: {'page':Int, 'limit':Int}
+        Output: {'msg':String, 'total_number':Int, 'page':Int, 'showing':Int, news:List}
+'''
 # GET ALL NEWS ARTICLES
 @app.route('/news', methods = ['GET'])
 def getAllNews():
-    news = collection_news.find({})
+    
+    # default page and limit values
+    page_limit = 10
+    page = 1
+
+    # count total news articles
+    news_count = collection_news.count_documents({})
+
+    # check if page limit exists
+    if(request.args.get('limit')):
+        page_limit = int(request.args.get('limit'))
+
+    # check if page exists
+    if(request.args.get('page')):
+        page = int(request.args.get('page'))
+
+    news = collection_news.find().sort('published', -1).skip(page_limit * (page - 1)).limit(page_limit)
+
     news_list = []
     for n in news:
         n['_id'] = str(n['_id'])
         news_list.append(n)
     return {
         "msg"   : "Success",
-        "result" : news_list
+        "total_number" : news_count,
+        "page" : page,
+        "showing": page_limit,
+        "news" : news_list
     }
 
 # INSERT ONE NEWS ARTICLE 
