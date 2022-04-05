@@ -4,7 +4,7 @@ import News from '../components/news'
 const Home2: NextPage = () => {
   return (
 
-    <News></News>
+    <div>user info</div>
 
   )
 }
