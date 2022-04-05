@@ -17,11 +17,12 @@ export async function getServerSideProps(ctx: {req : Request, res: Response}) {
     const articles = await APIService.GetLatestNews(1,11)
     const ran = _.random(1,10)
     const randomArticles = await APIService.GetLatestNews(ran,10)
+    console.log(articles)
     return {props: {articles: articles, randomArticles: randomArticles}}
 
 
   } catch (error) {
-    
+    console.log(error)
       return { redirect : { destination : '/404'}}
   }
 
