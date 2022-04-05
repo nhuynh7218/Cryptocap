@@ -1,4 +1,4 @@
-import os
+import os, random
 from flask import Flask
 from flask_cors import CORS
 # from flask import jsonify
@@ -54,7 +54,15 @@ TODO:
     - SORT BY VOTES
         -news.sort(votes: asec).skip(x).limit(x)
     
+    const articles = await APIService.GetLatestNews(1,11)
+    const ran = _.random(1,10)
+    const randomArticles = await 
+    const randomArticles = APIService.GetLatestNews(ran,10)
+
+
 '''
+
+
 # GET ALL NEWS ARTICLES
 @app.route('/news', methods = ['GET'])
 def getAllNews():
@@ -85,7 +93,7 @@ def getAllNews():
         page = int(request.args.get('page'))
         
     news = collection_news.find().sort("published", order).skip(page_limit * (page - 1)).limit(page_limit)
-
+    x = random.randint(1,10)
     news_list = []
     for n in news:
         n['_id'] = str(n['_id'])
@@ -96,8 +104,10 @@ def getAllNews():
         "total_number" : news_count,
         "page" : page,
         "showing": page_limit,
-        "news" : news_list
+        "news" : news_list,
+        "randomarticle": news_list[x]
     }
+
 
 # INSERT ONE NEWS ARTICLE 
 @app.route('/news', methods = ['POST'])
