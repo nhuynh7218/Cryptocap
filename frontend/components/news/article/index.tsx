@@ -1,31 +1,22 @@
-import React, { useState } from "react";
-import { Image } from "@chakra-ui/react"
+import React, { useEffect, useState } from "react";
+import { Divider, Image, Link, Spinner } from "@chakra-ui/react"
 import { motion } from "framer-motion";
-export default function Article() {
-    let sampleArticle = {
-        clicks: 88,
-        id: 'jdhf872f',
-        source: 'Twitter',
-        title: 'BTC Crashed',
-        votes: 76,
-        author: 'Some Name',
-        date: new Date(),
-        description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris quis ipsum nec ligula commodo pulvinar. Morbi nulla mauris, fringilla ornare nunc vel, tempus blandit turpis. Maecenas nibh purus, viverra vel consequat sit amet, efficitur sed nisl. Phasellus consectetur, erat quis dapibus accumsan, justo sem hendrerit augue, quis consectetur magna lorem sed lectus. Praesent maximus feugiat semper. Curabitur facilisis sapien vel mauris dignissim, nec sagittis est bibendum. Integer faucibus commodo nisi et aliquet. Curabitur ac vestibulum lorem, a laoreet lorem. Nullam sed tincidunt tellus, in varius ex. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed arcu sapien, porttitor nec iaculis et, hendrerit eu eros.
-
-        Integer tincidunt libero et vestibulum vestibulum. Sed egestas enim at suscipit pulvinar. Etiam quis libero suscipit, aliquet enim ac, feugiat ante. Mauris in blandit tortor. Donec commodo tortor eu efficitur porttitor. Ut ornare libero euismod purus varius imperdiet sit amet quis velit. Proin tincidunt eu purus vitae semper.
+import { APIService } from "../../../services/APIService";
+import { ArticleInfo } from "../../../interfaces/get";
+import { NewsCardCell } from "..";
+export default function Article(props: {article: ArticleInfo}) {
+    const [relatedArticle, setRelated] = useState<ArticleInfo[] | null>(null)
+    useEffect(()=>{
+        async function getRelated() {
+            const articles = await APIService.GetLatestNews(2,10)
+            setRelated(articles) 
+        }
+        getRelated()
         
-        Aliquam aliquet enim lacus, et lacinia ante vulputate a. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed pharetra dapibus dui, vitae auctor purus euismod quis. Sed tincidunt vulputate dui eget pretium. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed tincidunt diam urna, ut ultrices lacus rutrum eget. Proin diam est, varius id condimentum et, sodales id massa. Vivamus molestie, libero eget varius sodales, nulla leo ornare eros, a tincidunt libero tortor non lectus. Phasellus sit amet suscipit enim. Ut volutpat imperdiet cursus. Proin sit amet tristique dui, quis tempus eros. Aliquam magna enim, sodales non eros quis, vulputate molestie ligula. Sed posuere a sapien varius malesuada. Nullam sodales nec metus sed dignissim.
-        
-        Nunc nec nisl placerat, scelerisque sem eu, vestibulum quam. In porttitor purus arcu, vitae mollis odio laoreet in. Sed egestas facilisis efficitur. Fusce tortor augue, vehicula ut diam eu, facilisis varius tortor. Quisque consectetur porttitor dignissim. Aliquam pretium semper mi vel euismod. Nullam in blandit tellus, ut pellentesque metus. Proin laoreet sed nibh eu luctus. Quisque dapibus arcu in eros lobortis gravida mattis sed metus. Vivamus in urna fermentum, aliquam lacus sit amet, egestas tellus. Nulla dignissim ligula id tortor placerat blandit vitae sed ipsum. Morbi a leo libero. Aliquam dignissim eget tortor a efficitur. Mauris egestas orci vitae facilisis ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        
-        Etiam ac risus ut nunc condimentum iaculis nec et neque. Nulla vitae ipsum quis lorem facilisis fringilla quis a sem. Curabitur erat nunc, blandit id suscipit in, porta finibus arcu. Ut ultricies nulla eget massa ultricies, ac placerat mi lacinia. Pellentesque in egestas metus. Donec in neque lobortis, consectetur nulla in, finibus nisi. Nullam condimentum elit vel fringilla blandit. Proin id quam posuere, molestie velit vel, efficitur tortor. Curabitur ante dui, sodales sed cursus et, fringilla ut odio.
-        
-        `,
-        image: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80',
-        tags: ['BTC', 'USA']
-
-    }
-    const [totalVotes, setVotes] = useState(sampleArticle.votes)
+    }, [])
+    let article = props.article
+    let d = new Date(article.published)
+    const [totalVotes, setVotes] = useState(article.votes ?? 99)
     const container = {
         hidden: {
             opacity: 0
@@ -37,19 +28,23 @@ export default function Article() {
           }
         }
       };
+      async function k () {
+          await APIService.GetLatestNews(1,10)
+      }
     return (
         <div className="flex flex-col items-center space-y-4 py-4">
+           
             <div className=" font-black text-center">
-                <motion.p animate={{x: ["-700%", "0%"]}} transition={{duration: 0.75}}>{new Date().toDateString()}</motion.p>
+                <motion.p animate={{x: ["-700%", "0%"]}} transition={{duration: 0.75}}>{d.toDateString()}</motion.p>
                 <motion.p animate={{x: ["700%", "0%"]}} transition={{duration: 0.75}}> 4 Mins Ago</motion.p>
             </div>
-            <motion.p animate={{y: ["-700%", "80%","-30%", "0%"]}} transition={{duration: 1, delay:0.75}} className=" font-extrabold text-2xl underline">{sampleArticle.title}</motion.p>
+            <motion.p animate={{y: ["-700%", "80%","-30%", "0%"]}} transition={{duration: 1, delay:0.75}} className=" font-extrabold text-2xl underline">{article.title}</motion.p>
 <motion.div animate={{scale:[0,1]}} transition={{duration: 0.55, delay:0.75}}>
-<Image width={350} height={300} src={sampleArticle.image} className=" shadow-2xl rounded  duration-500 transition-all"></Image>
+<Image width={350} height={300} src={article.image} className=" shadow-2xl rounded  duration-500 transition-all"></Image>
 
 </motion.div>
            <div className="flex flex-col">
-            <button className=" font-bold text-md "> <SplitText 
+            {/* <Link className=" font-bold text-md "> <SplitText 
                 initial={{ y: '100%' }}
                 animate="visible"
                 variants={{
@@ -61,9 +56,9 @@ export default function Article() {
                   })
                 }}
               >
-              {"By: " + sampleArticle.author}
-              </SplitText></button>
-              <button  className=" font-bold text-md "> <SplitText 
+              {"By: " + article.author}
+              </SplitText></Link> */}
+              <Link href={`/article/${article.source}`}  rel="noreferrer" target="_blank" className=" font-bold text-md "> <SplitText 
                 initial={{ y: '100%' }}
                 animate="visible"
                 variants={{
@@ -75,8 +70,8 @@ export default function Article() {
                   })
                 }}
               >
-             {"Source: " + sampleArticle.source}
-              </SplitText></button>
+             {"Source: " + article.source}
+              </SplitText></Link>
            </div>
 
 
@@ -94,11 +89,37 @@ export default function Article() {
            
             </div>
      
-            <motion.p initial={container.hidden}  animate={container.visible} variants={container} className="font-semibold   px-10 md:px-20 lg:px-0 lg:w-3/4 xl:w-3/5 ">
-                {sampleArticle.description}
+            <motion.p initial={container.hidden}  animate={container.visible} variants={container} className="font-semibold  text-center  px-10 md:px-20 lg:px-0 lg:w-3/4 xl:w-3/5 ">
+                {article.description}
             </motion.p>
-            <div className="flex flex-col font-extrabold text-2xl">
-                <p>Related</p>
+            <Divider  className="py-6 mx-5"/>
+
+            <div className="flex flex-col justify-center">
+                {relatedArticle ? 
+                <div>
+                    <h1 className="w-full font-black text-lg">Related</h1>
+                <div className={' grid px-2 sm:px-0 gap-4 grid-cols-2 md:grid-cols-3   lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
+                    {
+                        relatedArticle.map((val, index) => {
+                            return (
+                                <NewsCardCell newsArticle={val} key={index} />
+                            )
+                        })
+                    }
+                </div> 
+                </div>
+                :
+                <div>
+                    
+                    <Spinner
+                                thickness='4px'
+                                speed='0.65s'
+                                emptyColor='gray.200'
+                                color='blue.500'
+                                size='xl'
+                            />
+                </div>
+                }
             </div>
 
         </div>

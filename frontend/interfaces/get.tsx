@@ -1,8 +1,9 @@
 export interface ArticleInfo {
-    id: string,
-    date: Date,
+    _id: string,
+    published: Date,
     author: string,
     title: string,
+    url: string,
     description : string,
     tags : string[]
     image: string,
