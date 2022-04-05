@@ -27,6 +27,17 @@ mongo = PyMongo(app)
 # news collection
 collection_news = mongo.db.news
 
+collection_news.aggregate([
+    {
+        '$addFields': {
+            'upvote': 0, 
+            'downvote': 0
+        }
+    }
+])
+
+# print(result)
+
 # RESTAPI INDEX PAGE
 @app.get('/')
 def index():
@@ -38,6 +49,11 @@ def index():
     GET:
         Input: {'page':Int, 'limit':Int}
         Output: {'msg':String, 'total_number':Int, 'page':Int, 'showing':Int, news:List}
+````
+TODO:
+    - SORT BY VOTES
+        -news.sort(votes: asec).skip(x).limit(x)
+    
 '''
 # GET ALL NEWS ARTICLES
 @app.route('/news', methods = ['GET'])
@@ -63,6 +79,7 @@ def getAllNews():
     news_list = []
     for n in news:
         n['_id'] = str(n['_id'])
+        n['totalVotes'] = n['upvote'] - n['downvote']
         news_list.append(n)
     return {
         "msg"   : "Success",
@@ -98,6 +115,7 @@ def getNews(newsid:int):
     if (news is None):
         return {'msg' : "No news with the given id exists"}
     news['_id'] = str(news['_id'])
+    news['totalVotes'] = news['upvote'] - news['downvote']
     return {
         "msg"  : "Success",
         "result" : news
@@ -122,6 +140,35 @@ def updateNews(newsid:int):
     if (modified_count == 0):
         return {"msg" : "No news exists with the given id"}
     return {"msg" : "Updated Successfully"}
+
+
+# UPDATE UPVOTE NEWS ARTICLE BY ID
+@app.route('/news/upvote/<newsid>', methods=['GET', 'POST'])
+def updateUpvoteNews(newsid:int):
+    modified_count = collection_news.update_one(
+        {"_id": ObjectId(newsid)},
+        {
+            "$inc": { "upvote": 1 }
+        }
+    ).modified_count
+
+    if (modified_count == 0):
+        return {"msg" : "The article does not exists with the given id"}
+    return {"msg" : "Upvote Updated Successfully"}
+
+# UPDATE DOWNVOTE NEWS ARTICLE BY ID
+@app.route('/news/downvote/<newsid>', methods=['GET', 'POST'])
+def updateDownvoteNews(newsid:int):
+    modified_count = collection_news.update_one(
+        {"_id": ObjectId(newsid)},
+        {
+            "$inc": { "downvote": 1 }
+        }
+    ).modified_count
+
+    if (modified_count == 0):
+        return {"msg" : "The article does not exists with the given id"}
+    return {"msg" : "Downvote Updated Successfully"}
 
 if __name__ == '__main__':
     app.run(debug=True)
