@@ -62,24 +62,34 @@ def getAllNews():
     # default page and limit values
     page_limit = 10
     page = 1
-
+    # sortby = "published"
+    order = -1 # desc -1 / asc 1
+    
     # count total news articles
     news_count = collection_news.count_documents({})
 
-    # check if page limit exists
+    # check if sort arg exists
+    # if(request.args.get('sort')):
+    #     sortby = int(request.args.get('sort'))
+    
+    # check if order arg exists
+    if(request.args.get('order')):
+        order = int(request.args.get('order'))
+
+    # check if page limit arg exists
     if(request.args.get('limit')):
         page_limit = int(request.args.get('limit'))
 
-    # check if page exists
+    # check if page arg exists
     if(request.args.get('page')):
         page = int(request.args.get('page'))
-
-    news = collection_news.find().sort('published', -1).skip(page_limit * (page - 1)).limit(page_limit)
+        
+    news = collection_news.find().sort("published", order).skip(page_limit * (page - 1)).limit(page_limit)
 
     news_list = []
     for n in news:
         n['_id'] = str(n['_id'])
-        n['totalVotes'] = n['upvote'] - n['downvote']
+        n['totalvotes'] = n['upvote'] - n['downvote']
         news_list.append(n)
     return {
         "msg"   : "Success",
