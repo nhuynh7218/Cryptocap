@@ -3,48 +3,55 @@ import {Box,Heading,Link,Image,Text,Divider,HStack,Tag,SpaceProps,useColorModeVa
 import { ArticleInfo } from "../../interfaces/get";
 
 
-function NewsCardCell(props: { newsArticle: ArticleInfo }) {
+export function NewsCardCell(props: { newsArticle: ArticleInfo }) {
     const { colorMode, toggleColorMode } = useColorMode();
 
     const { newsArticle } = props
     return (
-        <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 '} flex justify-center delay-50 duration-100   p-5 rounded-lg w-40 md:w-60 lg:w-72 group shadow-2xl`}>
+        <div className="flex flex-col">
+            <Link  href={newsArticle.url} rel="noreferrer" target="_blank" className={` w-full text-center text-bold  py-2 ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' } rounded-t-md`}>Source</Link>
+    
+        <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 '} flex justify-center delay-50 duration-100   p-5 rounded-b-lg w-40 md:w-60 lg:w-72 group shadow-2xl`}>
+            
+            <Link href={`/article/${props.newsArticle._id}`}>
 
-            <Link href={`/article/${props.newsArticle.id}`}>
-
-                <a className="" >
+                <div className="" >
                 
                     <Image src={newsArticle.image} className=" shadow-2xl rounded hover:scale-105 duration-500 transition-all"></Image>
 
                
-                    <h1 className="font-bold text-lg  mt-5">{newsArticle.title}</h1>
-                    <h1 className="font-bold text-lg mt-5">{newsArticle.author}</h1>
+                    <h1 className="font-bold text-lg underline  mt-5 line-clamp-3">{newsArticle.title}</h1>
+                    {/* <h1 className="font-bold text-lg mt-5">{newsArticle.author}</h1> */}
 
-                    <h1 className="font-bold text-sm  line-clamp-4 ">{`${newsArticle.description} `}</h1>
-                    <h1 className="font-bold text-sm  ">{`tags`}</h1>
+                    <h1 className="font-bold text-sm  line-clamp-4 ">{`${newsArticle.description}`}</h1>
+                    <button onClick={()=> {}} className="pt-4">
+                        <BlogTags tags={['BTC', 'GLOBAL']} />
+                    </button>
 
-                </a>
+                </div>
             </Link>
 
+        </div>
         </div>
     )
 }
 const BlogAuthor = (props : {name: string, date: Date}) => {
     return (
         <HStack marginTop="2" spacing="2" display="flex" alignItems="center">
-            <Image
+            {/* <Image
                 borderRadius="full"
                 boxSize="40px"
-                src="https://pbs.twimg.com/profile_images/1308769664240160770/AfgzWVE7_400x400.jpg"
+                src=""
                 alt={`Avatar of ${props.name}`}
-            />
-            <Text fontWeight="medium">{props.name}</Text>
+            /> */}
+            <Text fontWeight="medium">{"Source: " +props.name}</Text>
             <Text>—</Text>
             <Text>{props.date.toLocaleDateString()}</Text>
         </HStack>
     );
 };
 function BigNewsCell(props: { newsArticle: ArticleInfo }) {
+    const { colorMode, toggleColorMode } = useColorMode();
 
     return (
         <Box
@@ -63,11 +70,11 @@ function BigNewsCell(props: { newsArticle: ArticleInfo }) {
                     zIndex="2"
                     marginLeft={{ base: '0', sm: '5%' }}
                     marginTop="5%">
-                    <Link href={`/article/${props.newsArticle.id}`} textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                    <Link href={`/article/${props.newsArticle._id}`} textDecoration="none" _hover={{ textDecoration: 'none' }}>
                         <Image
                             borderRadius="lg"
                             src={
-                                'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80'
+                               props.newsArticle.image
                             }
                             alt="some good alt text"
                             objectFit="contain"
@@ -92,10 +99,13 @@ function BigNewsCell(props: { newsArticle: ArticleInfo }) {
                 flexDirection="column"
                 justifyContent="center"
                 marginTop={{ base: '3', sm: '0' }}>
+                <Link className = "py-3" href={`/article/${props.newsArticle.source}`}  rel="noreferrer" target="_blank" textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                    <button className={`rounded px-4 py-1 font-black ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' }`}>Source</button>
+                </Link>
                 <BlogTags tags={['BTC', 'GLOBAL']} />
                 <Heading marginTop="1">
-                    <Link textDecoration="none" _hover={{ textDecoration: 'none' }}>
-                        Blog article title
+                    <Link  href={`/article/${props.newsArticle._id}`}  textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                        {props.newsArticle.title}
                     </Link>
                 </Heading>
                 <Text
@@ -104,14 +114,9 @@ function BigNewsCell(props: { newsArticle: ArticleInfo }) {
                     marginTop="2"
                     color={useColorModeValue('gray.700', 'gray.200')}
                     fontSize="lg">
-                    {`  description description description description description description description description description description
-                description description description description description description description description description description
-                description description description description description description description description description description
-                description description description description description description description description description description
-                description description description description description description description description description description
-                description description description description description description description description description description...`}
+                    {props.newsArticle.description}
                 </Text>
-                <BlogAuthor name="POTUS" date={new Date('2022-06-09T19:01:27Z')} />
+                <BlogAuthor name={props.newsArticle.source} date={new Date(props.newsArticle.published)} />
             </Box>
         </Box>)
 }
@@ -142,43 +147,24 @@ interface BlogAuthorProps {
 
 
 
-function Index() {
-    const oneArticle: ArticleInfo = {
-        clicks: 88,
-        id: 'jdhf872f',
-        source: 'Twitter',
-        title: 'BTC Crashed',
-        votes: 76,
-        author: 'Some Name',
-        date: new Date(),
-        description: 'akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd akljsd  akljsd akljsd akljsd',
-        image: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=800&q=80',
-        tags: ['BTC', 'USA']
-
-
-    }
-    const newsList = () => {
-        var p = []
-        for (var i = 0; i < 5; i++) {
-            p.push(oneArticle)
-        }
-        return p
-    }
+function Index(props: {articles: ArticleInfo[], randomArticles: ArticleInfo[]}) {
+   
+  
     return (
         <div className={`flex flex-col justify-center items-center overflow-y-hidden`}>
             <div className={`flex flex-col px-6 md:px-12`}>
                 <Heading className={`text-center pt-4`} as="h1">Daily Feature</Heading>
-                <BigNewsCell newsArticle={oneArticle}/>
+                <BigNewsCell newsArticle={props.articles[0]}/>
             </div>
             <div>
                 <div className=" flex flex-row pt-6">
                     <h1 className="font-black text-3xl px-4">Latest articles</h1>
-                    <button className=" font-normal text-xs pl-2 animate-bounce text-purple-500 hover:underline">More</button>
+                    <button className=" font-normal text-xs pl-2 animate-bounce text-purple-500 ">More</button>
                 </div>
                 <Divider marginTop="5" />
                 <div className={' grid  gap-4 grid-cols-2 sm:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
                     {
-                        newsList().map((val, index) => {
+                        props.articles.slice(1).map((val, index) => {
                             return (
                                 <NewsCardCell newsArticle={val} key={index} />
                             )
@@ -194,7 +180,7 @@ function Index() {
             <div className="flex justify-center">
                 <div className={' grid px-2 sm:px-0 gap-4 grid-cols-2 md:grid-cols-3   lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
                     {
-                        newsList().map((val, index) => {
+                        props.randomArticles.map((val, index) => {
                             return (
                                 <NewsCardCell newsArticle={val} key={index} />
                             )

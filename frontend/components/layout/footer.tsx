@@ -42,7 +42,7 @@ import {
                   New
                 </Tag>
               </Stack> */}
-              <Link href={'#'}>News</Link>
+              <Link href={'/'}>News</Link>
               <Link href={'#'}>Token List</Link>
               <Link href={'#'}>Public API</Link>
             </Stack>
@@ -53,10 +53,10 @@ import {
             </Stack>
             <Stack align={'flex-start'}>
               <ListHeader>Founders</ListHeader>
-              <Link href={'#'}>Darren</Link>
-              <Link href={'#'}>Ardi</Link>
-              <Link href={'#'}>Mike</Link>
-              <Link href={'#'}>Nick</Link>
+              <Link href={'/founders'}>Darren</Link>
+              <Link href={'/founders'}>Ardi</Link>
+              <Link href={'/founders'}>Mike</Link>
+              <Link href={'/founders'}>Nick</Link>
             </Stack>
             <Stack align={'flex-start'}>
               <ListHeader>Follow Us</ListHeader>
