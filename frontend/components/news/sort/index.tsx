@@ -7,21 +7,31 @@ import { APIService } from "../../../services/APIService";
 
 export function SortedArticles() {
     const { colorMode, toggleColorMode } = useColorMode();
+    // Check if an api call is in progress
     const [loading, setLoading] = useState(false)
     const [sortedArticles, setSortedArticles] = useState<ArticleInfo[]>([])
+    // IsMax is true if all results has been returned
     const [isMax, setMax] = useState(false)
+    // Tracks current page
     const [currentPage, setPage] = useState(1)
     async function fetchArticles(page: number, limit: number) {
+        // if is max, stop api call to save resources
         if(isMax){return}
+        // Else show loading spinner and disable button to prevent duplicate api calls
         setLoading(true)
         const articles = await APIService.GetLatestNews(page,limit)
+        // If return returns 0, we have reached max page. 
         if (articles.length == 0) {
             setMax(true)
             return
         }
+        // Else concat the existing article array with new array
         const newArticle = _.concat(sortedArticles, articles)
+        // set the old array with new concatted array
         setSortedArticles(newArticle)
+        // update page
         setPage(currentPage + 1)
+        // set loading to false, request is now finished
         setLoading(false)
     }
     useEffect(()=> {

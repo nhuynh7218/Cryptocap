@@ -99,7 +99,7 @@ function BigNewsCell(props: { newsArticle: ArticleInfo }) {
                 flexDirection="column"
                 justifyContent="center"
                 marginTop={{ base: '3', sm: '0' }}>
-                <Link className = "py-3" href={`news/article/${props.newsArticle.source}`}  rel="noreferrer" target="_blank" textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                <Link className = "py-3" href={`${props.newsArticle.url}`}  rel="noreferrer" target="_blank" textDecoration="none" _hover={{ textDecoration: 'none' }}>
                     <button className={`rounded px-4 py-1 font-black ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' }`}>Source</button>
                 </Link>
                 <BlogTags tags={['BTC', 'GLOBAL']} />
