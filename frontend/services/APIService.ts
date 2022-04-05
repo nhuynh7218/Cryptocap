@@ -45,7 +45,7 @@ export class APIService {
             throw new Error()
         }
         console.log(data)
-        return data.news
+        return data.result
     }
     static async GetArticle(articleID: string): Promise<ArticleInfo> {
         const req = await axios.get<APIFormat<ArticleInfo>>(this.baseURL + "/news/"+articleID, {
