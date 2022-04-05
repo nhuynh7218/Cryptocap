@@ -1,7 +1,7 @@
 import React from "react";
-import Article from "../../components/news/article";
-import { ArticleInfo } from "../../interfaces/get";
-import { APIService } from "../../services/APIService";
+import Article from "../../../components/news/article";
+import { ArticleInfo } from "../../../interfaces/get";
+import { APIService } from "../../../services/APIService";
 
 function ArticleInfo(props : {article:ArticleInfo}) {
     return (

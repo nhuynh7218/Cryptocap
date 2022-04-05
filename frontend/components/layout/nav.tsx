@@ -83,41 +83,47 @@ export default function NavBar() {
                 {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
               </Button>
 
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rounded={'full'}
-                  variant={'link'}
-                  cursor={'pointer'}
-                  minW={0}>
-                  <Avatar
-                    size={'sm'}
-                    src={''}
-                  />
-                </MenuButton>
-                <MenuList alignItems={'center'}>
-                  <br />
-                  <Center>
-                    <Avatar
-                      size={'2xl'}
-                      src={''}
-                    />
-                  </Center>
-                  <br />
-                  <Center>
-                    <p>Hello 0x....x8ye</p>
-                  </Center>
-                  <br />
-                  <MenuDivider />
-                  <MenuItem>Your Holdings</MenuItem>
-                  <MenuItem>Settings</MenuItem>
-                  <MenuItem>Logout</MenuItem>
-                </MenuList>
-              </Menu>
+            <UserMenu/>
             </Stack>
           </Flex>
         </Flex>
       </Box>
     </>
   );
+}
+
+function UserMenu(){
+   return (
+    <Menu>
+    <MenuButton
+      as={Button}
+      rounded={'full'}
+      variant={'link'}
+      cursor={'pointer'}
+      minW={0}>
+      <Avatar
+        size={'sm'}
+        src={''}
+      />
+    </MenuButton>
+    <MenuList alignItems={'center'}>
+      <br />
+      <Center>
+        <Avatar
+          size={'2xl'}
+          src={''}
+        />
+      </Center>
+      <br />
+      <Center>
+        <p>Hello 0x....x8ye</p>
+      </Center>
+      <br />
+      <MenuDivider />
+      <MenuItem>Your Holdings</MenuItem>
+      <MenuItem>Settings</MenuItem>
+      <MenuItem>Logout</MenuItem>
+    </MenuList>
+  </Menu>
+   )
 }
