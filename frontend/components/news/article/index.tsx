@@ -58,7 +58,7 @@ export default function Article(props: {article: ArticleInfo}) {
               >
               {"By: " + article.author}
               </SplitText></Link> */}
-              <Link href={`/article/${article.source}`}  rel="noreferrer" target="_blank" className=" font-bold text-md "> <SplitText 
+              <Link href={`${article.url}`}  rel="noreferrer" target="_blank" className=" font-bold text-md "> <SplitText 
                 initial={{ y: '100%' }}
                 animate="visible"
                 variants={{

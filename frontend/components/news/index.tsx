@@ -13,7 +13,7 @@ export function NewsCardCell(props: { newsArticle: ArticleInfo }) {
     
         <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 '} flex justify-center delay-50 duration-100   p-5 rounded-b-lg w-40 md:w-60 lg:w-72 group shadow-2xl`}>
             
-            <Link href={`/article/${props.newsArticle._id}`}>
+            <Link href={`news/article/${props.newsArticle._id}`}>
 
                 <div className="" >
                 
@@ -70,7 +70,7 @@ function BigNewsCell(props: { newsArticle: ArticleInfo }) {
                     zIndex="2"
                     marginLeft={{ base: '0', sm: '5%' }}
                     marginTop="5%">
-                    <Link href={`/article/${props.newsArticle._id}`} textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                    <Link href={`news/article/${props.newsArticle._id}`} textDecoration="none" _hover={{ textDecoration: 'none' }}>
                         <Image
                             borderRadius="lg"
                             src={
@@ -99,12 +99,12 @@ function BigNewsCell(props: { newsArticle: ArticleInfo }) {
                 flexDirection="column"
                 justifyContent="center"
                 marginTop={{ base: '3', sm: '0' }}>
-                <Link className = "py-3" href={`/article/${props.newsArticle.source}`}  rel="noreferrer" target="_blank" textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                <Link className = "py-3" href={`news/article/${props.newsArticle.source}`}  rel="noreferrer" target="_blank" textDecoration="none" _hover={{ textDecoration: 'none' }}>
                     <button className={`rounded px-4 py-1 font-black ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' }`}>Source</button>
                 </Link>
                 <BlogTags tags={['BTC', 'GLOBAL']} />
                 <Heading marginTop="1">
-                    <Link  href={`/article/${props.newsArticle._id}`}  textDecoration="none" _hover={{ textDecoration: 'none' }}>
+                    <Link  href={`news/article/${props.newsArticle._id}`}  textDecoration="none" _hover={{ textDecoration: 'none' }}>
                         {props.newsArticle.title}
                     </Link>
                 </Heading>
@@ -159,7 +159,7 @@ function Index(props: {articles: ArticleInfo[], randomArticles: ArticleInfo[]}) 
             <div>
                 <div className=" flex flex-row pt-6">
                     <h1 className="font-black text-3xl px-4">Latest articles</h1>
-                    <button className=" font-normal text-xs pl-2 animate-bounce text-purple-500 ">More</button>
+                    <Link href="/news/sort/latest" className=" font-normal text-xs pl-2 animate-bounce  "><h1 className="text-purple-500">More</h1></Link>
                 </div>
                 <Divider marginTop="5" />
                 <div className={' grid  gap-4 grid-cols-2 sm:grid-cols-3  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 pt-4 pb-6'}>
