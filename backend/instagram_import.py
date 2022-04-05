@@ -67,9 +67,9 @@ for item in insta_scraper.query_media_gen(shared_data):
     if(exists == False):
         collection.insert_one(document)
         print("\n Imported ",x, " - ", document['url'], "\n")
-        x+=1
     else:
         print("\n IG News already imported. Skipped.")
+    x+=1
 
     if(x==10):
         break
