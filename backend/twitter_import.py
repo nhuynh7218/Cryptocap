@@ -58,6 +58,8 @@ for user in userID:
             "content" : tweet.text,
             "url": "https://twitter.com/"+user+"/status/"+(str(tweet.id)),
             "published": tweet.created_at,
+            "downvote": 0,
+            "upvote": 0
         }
         while picurlCount<3:
             picurlCount+=1

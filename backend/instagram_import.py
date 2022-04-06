@@ -59,7 +59,9 @@ for item in insta_scraper.query_media_gen(shared_data):
       "source": "TheCryptoGraph",
       "content": caption_text,
       "url": "https://www.instagram.com/p/" + item['shortcode'],
-      "published": datetime.datetime.fromtimestamp(item['taken_at_timestamp'])
+      "published": datetime.datetime.fromtimestamp(item['taken_at_timestamp']),
+      "downvote": 0,
+      "upvote": 0
     }
 
     # check if post exists in the mongodb 
