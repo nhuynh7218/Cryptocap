@@ -27,17 +27,6 @@ mongo = PyMongo(app)
 # news collection
 collection_news = mongo.db.news
 
-# collection_news.aggregate([
-#     {
-#         '$addFields': {
-#             'upvote': 0, 
-#             'downvote': 0
-#         }
-#     }
-# ])
-
-# print(result)
-
 # RESTAPI INDEX PAGE
 @app.get('/')
 def index():
