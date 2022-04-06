@@ -43,7 +43,9 @@ for post in posts:
       "source": post['source']['name'],
       "content": post['content'],
       "url": post['url'],
-      "published": published_date
+      "published": published_date,
+      "downvote": 0,
+      "upvote": 0
     }
 
     # check if post exists in the mongodb 
