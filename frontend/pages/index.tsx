@@ -1,6 +1,4 @@
 import _ from 'lodash'
-import type { NextPage } from 'next'
-import NavBar from '../components/layout'
 import News from '../components/news'
 import { ArticleInfo } from '../interfaces/get'
 import { APIService } from '../services/APIService'
@@ -21,7 +19,7 @@ export async function getServerSideProps(ctx: {req : Request, res: Response}) {
 
 
   } catch (error) {
-    console.log(error)
+    console.log(error) 
       return { redirect : { destination : '/404'}}
   }
 

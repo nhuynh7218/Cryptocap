@@ -26,7 +26,8 @@ import { useMoralis } from 'react-moralis';
 import { useLockBodyScroll } from '../../hooks/body-scroll-lock';
 import { AppState, APP_STATE } from '../../atom';
 import { useRecoilState } from 'recoil';
-import Web3 from 'web3';
+
+
 
 const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu: string, index: number, link: string }}) => (
   <NextLink  href={`${props.index == 0 ? '/' : `/${props.link.toLocaleLowerCase()}`}`}>
@@ -316,16 +317,17 @@ export function ClickOutSideModalWrapper(props: { children: JSX.Element, isActiv
 }
 
 
+
 function UserMenu(){
   const { account, logout } = useMoralis();
-   
+  const Web3 = require('web3')
    
   const [bal, getBal] = useState<any>(0)
   async function k(){
-                 
     const NODE_URL = "https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet/archive";
 
     const web3 = new Web3(new Web3.providers.HttpProvider(NODE_URL));
+    
     const balance = await web3.eth.getBalance(account!); 
 
     getBal(web3.utils.fromWei(balance))
@@ -334,7 +336,6 @@ function UserMenu(){
     k()
 
   },[])
-  const NODE_URL = "https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet/archive";
    return (
     <Menu>
     <MenuButton
