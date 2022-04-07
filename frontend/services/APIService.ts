@@ -1,12 +1,12 @@
 import axios from "axios";
 import { ArticleInfo } from "../interfaces/get";
 interface APIFormat<T> {
-    result: T
+    news: T
     msg: string
 
 }
 interface APIPagingFormat<T> {
-    result: T
+    news: T
     msg: string,
     page: number,
     showing: number,
@@ -17,8 +17,8 @@ export class APIService {
     
     public static readonly  baseURL: string = process.env.NODE_ENV == "production" ? "https://api.cryptocap.digital" : "https://api.cryptocap.digital"
     
-    static async GetInitialNews(): Promise<ArticleInfo[]> {
-        const req = await axios.get<APIFormat<ArticleInfo[]>>(this.baseURL + "/news", {
+    static async GetInitialNews(): Promise<{news: ArticleInfo[], randomArticle: ArticleInfo[]}> {
+        const req = await axios.get<{news: ArticleInfo[], randomarticle: ArticleInfo[], msg: string}>(this.baseURL + "/GetInitial", {
             headers: {
                 // "Access-Control-Allow-Origin" : "*"
             }
@@ -28,7 +28,7 @@ export class APIService {
             throw new Error()
         }
         console.log(data)
-        return data.result
+        return {news: data.news, randomArticle: data.randomarticle}
     }
     static async GetLatestNews(page: number, limit: number): Promise<ArticleInfo[]> {
         const req = await axios.get<APIFormat<ArticleInfo[]>>(this.baseURL + "/news", {
@@ -57,8 +57,8 @@ export class APIService {
         if (req.data.msg.toLocaleLowerCase() !== "success"){
             throw new Error()
         }
-        console.log(data.result)
-        return data.result
+        console.log(data.news)
+        return data.news
 
     }
 }

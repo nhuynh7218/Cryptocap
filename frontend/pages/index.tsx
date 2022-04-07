@@ -14,11 +14,10 @@ function Home(props: {articles: ArticleInfo[], randomArticles: ArticleInfo[]})  
 
 export async function getServerSideProps(ctx: {req : Request, res: Response}) {
   try {
-    const articles = await APIService.GetLatestNews(1,11)
-    const ran = _.random(1,10)
-    const randomArticles = await APIService.GetLatestNews(ran,10)
+    const articles = await APIService.GetInitialNews()
+  
     console.log(articles)
-    return {props: {articles: articles, randomArticles: randomArticles}}
+    return {props: {articles: articles.news, randomArticles: articles.news}}
 
 
   } catch (error) {
