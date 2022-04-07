@@ -319,8 +319,8 @@ export function ClickOutSideModalWrapper(props: { children: JSX.Element, isActiv
 function UserMenu(){
   const { account, logout } = useMoralis();
   
-  
-  const [bal, getBal] = useState(0)
+   
+  const [bal, getBal] = useState<any>(0)
   async function k(){
                  
     const NODE_URL = "https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet/archive";
