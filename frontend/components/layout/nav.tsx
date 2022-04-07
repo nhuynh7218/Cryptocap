@@ -26,6 +26,7 @@ import { useMoralis } from 'react-moralis';
 import { useLockBodyScroll } from '../../hooks/body-scroll-lock';
 import { AppState, APP_STATE } from '../../atom';
 import { useRecoilState } from 'recoil';
+import Web3 from 'web3';
 
 const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu: string, index: number, link: string }}) => (
   <NextLink  href={`${props.index == 0 ? '/' : `/${props.link.toLocaleLowerCase()}`}`}>
@@ -45,6 +46,9 @@ const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu
 );
 
 export default function NavBar() {
+  
+ 
+
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentMenu, setMenu] = useState('')
@@ -92,11 +96,15 @@ const { authenticate,
     enableWeb3,
 
     Moralis, } = useMoralis();
-useEffect(() => {
-
-  }, [isWeb3Enabled, isAuthenticated, enableWeb3]);
+    const [address, setAddress] = useState();
+    useEffect(() => {
+      if (isAuthenticated) {
+        setAddress(user?.attributes.ethAddress);
+      }
+    }, [isAuthenticated]);
   return (
     <>
+    {address}
       {showWalletConnectOptions && <WalletConnectModal isActived={showWalletConnectOptions} toggleActive={toggleShowWalletConnect} />
             }  
       <Box boxShadow='xl' bg={useColorModeValue('gray.50', 'gray.900')} px={4}>
@@ -120,7 +128,7 @@ useEffect(() => {
               </Button>
 
               {isWeb3Enabled  ?
-                                <div >
+                                <div className='pt-2'>
                                     <UserMenu />
                                 </div>
                                 : isWeb3EnableLoading  ?
@@ -309,6 +317,24 @@ export function ClickOutSideModalWrapper(props: { children: JSX.Element, isActiv
 
 
 function UserMenu(){
+  const { account, logout } = useMoralis();
+  
+  
+  const [bal, getBal] = useState(0)
+  async function k(){
+                 
+    const NODE_URL = "https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet/archive";
+
+    const web3 = new Web3(new Web3.providers.HttpProvider(NODE_URL));
+    const balance = await web3.eth.getBalance(account!); 
+
+    getBal(web3.utils.fromWei(balance))
+  }
+  useEffect(()=>{
+    k()
+
+  },[])
+  const NODE_URL = "https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet/archive";
    return (
     <Menu>
     <MenuButton
@@ -332,13 +358,15 @@ function UserMenu(){
       </Center>
       <br />
       <Center>
-        <p>Hello 0x....x8ye</p>
+        <p>{account}</p>
       </Center>
       <br />
       <MenuDivider />
-      <MenuItem>Your Holdings</MenuItem>
-      <MenuItem>Settings</MenuItem>
-      <MenuItem>Logout</MenuItem>
+      <MenuItem>{bal}</MenuItem>
+      <MenuItem onClick={async() => {
+
+      }}>Settings</MenuItem>
+      <MenuItem onClick={()=>logout()}>Logout</MenuItem>
     </MenuList>
   </Menu>
    )

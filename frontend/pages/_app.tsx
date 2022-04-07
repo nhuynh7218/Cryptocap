@@ -39,11 +39,11 @@ const SetupLoadingComp = () =>{
     <></>
   )
 }
-import dynamic from 'next/dynamic'
+
 import { MoralisProvider } from 'react-moralis'
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <MoralisProvider appId={''} serverUrl='s' >
+    <MoralisProvider appId="xx" serverUrl="xx" >
     <ChakraProvider>
     <RecoilRoot>
     <SetupLoadingComp />
