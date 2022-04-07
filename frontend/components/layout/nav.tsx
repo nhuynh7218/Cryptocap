@@ -318,7 +318,7 @@ export function ClickOutSideModalWrapper(props: { children: JSX.Element, isActiv
 
 function UserMenu(){
   const { account, logout } = useMoralis();
-  
+   
    
   const [bal, getBal] = useState<any>(0)
   async function k(){
