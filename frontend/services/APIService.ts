@@ -5,6 +5,11 @@ interface APIFormat<T> {
     msg: string
 
 }
+interface APIFormat2<T> {
+    result: T
+    msg: string
+
+}
 interface APIPagingFormat<T> {
     news: T
     msg: string,
@@ -48,7 +53,8 @@ export class APIService {
         return data.news
     }
     static async GetArticle(articleID: string): Promise<ArticleInfo> {
-        const req = await axios.get<APIFormat<ArticleInfo>>(this.baseURL + "/news/"+articleID, {
+        console.log("article id", articleID)
+        const req = await axios.get<APIFormat2<ArticleInfo>>(this.baseURL + "/news/"+articleID, {
            params : {
 
            }
@@ -57,8 +63,7 @@ export class APIService {
         if (req.data.msg.toLocaleLowerCase() !== "success"){
             throw new Error()
         }
-        console.log(data.news)
-        return data.news
+        return data.result
 
     }
 }
