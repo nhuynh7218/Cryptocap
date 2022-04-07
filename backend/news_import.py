@@ -1,4 +1,4 @@
-import os, newsapi, pymongo, urllib.parse, datetime
+import os, newsapi, pymongo, datetime
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from newsapi.newsapi_client import NewsApiClient
@@ -13,6 +13,7 @@ NewsAPI_KEY = os.getenv('NEWSAPI_KEY')
 MongoDB_USER = os.getenv('MongoDB_USER')
 MongoDB_PASS = os.getenv('MongoDB_PASS')
 MongoDB_CLUSTER = os.getenv('MongoDB_CLUSTER')
+MongoDB_NAME = os.getenv('MongoDB_NAME')
 
 # Init
 newsapi = NewsApiClient(api_key=NewsAPI_KEY)
@@ -21,17 +22,19 @@ newsapi = NewsApiClient(api_key=NewsAPI_KEY)
 client = MongoClient('mongodb+srv://' + MongoDB_USER + ':' + MongoDB_PASS + '@' + MongoDB_CLUSTER + '/frontend?retryWrites=true&w=majority')
 
 # call mongodb func
-db = client['frontend']
+db = client[MongoDB_NAME]
 
 # select collection
 collection = db['news']
-  
-# /v2/get_everything
-sources = newsapi.get_everything(q='crypto', page=1, page_size=5)
+
+# /v2/get_everything, and select articles
+sources = newsapi.get_everything(q='crypto', page=1, page_size=10)
 posts = sources['articles']
 x=1
+# loop through the posts array (10)
 for post in posts:
     # first document
+    # format date
     published_date = datetime.datetime.strptime(post['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")
     document = {
       "title": post['title'],
@@ -40,9 +43,12 @@ for post in posts:
       "source": post['source']['name'],
       "content": post['content'],
       "url": post['url'],
-      "published": published_date
+      "published": published_date,
+      "downvote": 0,
+      "upvote": 0
     }
 
+    # check if post exists in the mongodb 
     exists = collection.count_documents({ "url": document['url'] }) > 0
     if(exists == False):
         collection.insert_one(document)
@@ -50,12 +56,3 @@ for post in posts:
         x+=1
     else:
         print("\n News already imported. Skipped.")
-
-    # print("Title:", post['title'].lower())
-    # print("Description:", post['description'])
-    # print("Image:", post['urlToImage'])
-    # print("Published:", post['publishedAt'])
-    # print("Source:", post['source']['name'])
-    # print("Content:", post['content'])
-    # print('URL: ', post['url'])
-    # break
