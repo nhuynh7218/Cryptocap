@@ -19,7 +19,6 @@ export async function getServerSideProps(ctx: {params: any, req : Request, res: 
     
   
     } catch (error) {
-      
         return { redirect : { destination : '/404'}}
     }
   
