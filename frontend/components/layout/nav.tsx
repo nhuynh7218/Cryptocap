@@ -16,6 +16,7 @@ import {
   useColorMode,
   Center,
   HStack,
+  Divider,
 } from '@chakra-ui/react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
@@ -228,10 +229,17 @@ function WalletConnectModal(props: { isActived: boolean, toggleActive: (state: b
 
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border-emerald-200 border-4 ">
               <div className={`${colorMode == 'light' ? 'bg-white' : 'bg-gray-700'} py-6 p-4 flex flex-col text-center`}>
+                  <div className='flex flex-col items-center space-y-2 '>
+                  <button className={`bg-green-600 hover:bg-green-500 transition-all rounded p-2 font-bold`}>Sign Up</button>   
 
-                  <h1 className="mb-6 pb-2 border-b font-black">{'Connect Wallet'}</h1>
+                    <button className={`bg-green-600 hover:bg-green-500 transition-all rounded p-2 font-bold`}>Log In</button>   
 
-                  <div className="flex flex-row text-center space-x-6 pt-6">
+                  </div>             
+
+                  <h1 className='font-black flex flex-row py-2  '>   <Divider marginTop="4" marginRight={"2"}  /> or   <Divider marginTop="4" marginLeft={"2"} /></h1>
+                  <h1 className="  font-black">{'Connect Wallet'}</h1>
+
+                  <div className="flex flex-row text-center space-x-6 pt-4">
                       <button className={`flex flex-col font-black items-center p-4  m-2 border-2 rounded-md ${colorMode == 'light' ? 'hover:bg-slate-200' : 'hover:bg-slate-600'} hover:scale-110 duration-300 transition-all`} onClick={ async() =>  await authenticateWallet(1) }>
                           <svg width="45px" height="50px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xlinkHref="http://www.w3.org/1999/xlink">
 
