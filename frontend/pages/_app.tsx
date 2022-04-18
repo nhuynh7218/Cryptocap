@@ -11,7 +11,7 @@ const SetupLoadingComp = () =>{
   const router = useRouter()
   const [currentAppState, setAppState] = useRecoilState(AppState);
 
-  
+  // hi
   useEffect(() => {
   
     const setLoad = () => {
