@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Divider, Image, Link, Spinner } from "@chakra-ui/react"
+import { Divider, Image, Link, Spinner, useToast } from "@chakra-ui/react"
 import { motion } from "framer-motion";
 import { APIService } from "../../../services/APIService";
 import { ArticleInfo } from "../../../interfaces/get";
 import { NewsCardCell } from "..";
+import { parseCookies, setCookie, destroyCookie } from 'nookies'
+import { addHours, differenceInHours, formatDistance } from "date-fns";
+
 export default function Article(props: {article: ArticleInfo}) {
+  const toast = useToast()
+
     const [relatedArticle, setRelated] = useState<ArticleInfo[] | null>(null)
+   
     useEffect(()=>{
         async function getRelated() {
             const articles = await APIService.GetLatestNews(2,10)
@@ -16,7 +22,7 @@ export default function Article(props: {article: ArticleInfo}) {
     }, [])
     let article = props.article
     let d = new Date(article.published)
-    const [totalVotes, setVotes] = useState(article.votes ?? 99)
+    const [totalVotes, setVotes] = useState(article.totalVotes ?? 99)
     const container = {
         hidden: {
             opacity: 0
@@ -28,8 +34,43 @@ export default function Article(props: {article: ArticleInfo}) {
           }
         }
       };
-      async function k () {
-          await APIService.GetLatestNews(1,10)
+      async function vote(isUpvote: boolean) {
+        const cookies = parseCookies()
+        var voteHistory = cookies[props.article._id]
+        if (voteHistory) {
+          const date = new Date(voteHistory)
+          const destinationDate = addHours(date, 24)
+          
+          const diff = formatDistance( destinationDate, new Date())
+          
+          toast({
+            title: 'You alrady voted!',
+            description: "You must wait one day to vote on each article, which is " + diff + " from now." ,
+            status: 'warning',
+            position: "top",
+            duration: 3000,
+            isClosable: true,
+          })
+          return
+          
+        }
+     
+        setCookie(null, props.article._id, (new Date()).toISOString(), {
+          maxAge: 360 * 24, //expires in one day
+          path: '/',
+        })
+  
+        await APIService.VoteArticle(isUpvote, props.article._id)
+        const newVote = isUpvote ? totalVotes + 1 : totalVotes - 1
+        setVotes(newVote)
+        toast({
+          title: 'Thanks for voting!',
+          status: 'success',
+          position: "top",
+          duration: 3000,
+          isClosable: true,
+        })
+       
       }
     return (
         <div className="flex flex-col items-center space-y-4 py-4">
@@ -76,11 +117,11 @@ export default function Article(props: {article: ArticleInfo}) {
 
 
             <div className="flex flex-row justify-between space-x-4">
-                <button onClick={() => setVotes(totalVotes +1 )}><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 hover:text-green-400" fill="green" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <button onClick={async () => await vote(true)}><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 hover:text-green-400" fill="green" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                 </svg></button>
                 <p className="font-black text-md cursor-default transition-all">{totalVotes}</p>
-                <button onClick={() => setVotes(totalVotes - 1 )}><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 hover:text-pink-400" fill="red" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <button onClick={async () => await vote(false)}><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 hover:text-pink-400" fill="red" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
                 </svg></button>
 

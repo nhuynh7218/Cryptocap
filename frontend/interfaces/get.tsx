@@ -5,7 +5,7 @@ export interface ArticleInfo {
     content: string,
     upvote: number,
     downvote: number,
-    totalvotes:number,
+    totalVotes:number,
     title: string,
     url: string,
     description : string,

@@ -21,7 +21,10 @@ interface APIPagingFormat<T> {
 export class APIService {
     
     public static readonly  baseURL: string = process.env.NODE_ENV == "production" ? "https://api.cryptocap.digital" : "https://api.cryptocap.digital"
-    
+    static async VoteArticle(isUpvote: boolean, articleID: string): Promise<void> {
+        const req = await axios.post(this.baseURL + "/news/upvote/" + articleID)
+        console.log(req.data)
+    }
     static async GetInitialNews(): Promise<{news: ArticleInfo[], randomArticle: ArticleInfo[]}> {
         const req = await axios.get<{news: ArticleInfo[], randomarticle: ArticleInfo[], msg: string}>(this.baseURL + "/GetInitial", {
             headers: {
