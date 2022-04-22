@@ -31,7 +31,11 @@ usernames = [IG_USER1, IG_USER2, IG_USER3]
 
 # select a random username from array
 ig_username = secrets.choice(usernames)
-args = {"login_user": ig_username, "login_pass": ig_pass, "cookiejar":"true"}
+
+# free proxy list from https://geonode.com/free-proxy-list/
+proxies_list = '{"https": "https://91.233.169.23:8081", "https": "https://81.68.243.42:80", "https": "https://107.151.182.247:80", "https": "https://203.34.48.10:9999", "https": "https://80.82.215.6:80", "https": "https://64.227.62.123:80", "https": "https://8.210.67.251:80"}'
+
+args = {"login_user": ig_username, "login_pass": ig_pass, "cookiejar":"true", "proxies": proxies_list}
 
 # pass arhs and authticate login
 insta_scraper = instagram_scraper.InstagramScraper(**args)

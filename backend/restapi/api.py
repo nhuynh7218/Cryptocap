@@ -26,6 +26,8 @@ mongo = PyMongo(app)
 
 # news collection
 collection_news = mongo.db.news
+# coins collection
+collection_coins = mongo.db.coins
 
 # RESTAPI INDEX PAGE
 @app.get('/')
@@ -209,6 +211,95 @@ def updateDownvoteNews(newsid:int):
     if (modified_count == 0):
         return {"msg" : "The article does not exists with the given id"}
     return {"msg" : "Downvote Updated Successfully"}
+
+
+# GET ALL CRYPTOCURRENCIES
+@app.route('/coins', methods = ['GET'])
+def getAllCoins():
+    
+    # default page and limit values
+    page_limit = 10
+    page = 1
+    sortby = "market_cap"
+    order = -1 # desc -1 / asc 1
+    
+    # count total news articles
+    coins_count = collection_coins.count_documents({})
+
+    # check if sort arg exists
+    if(request.args.get('sort')):
+        sortby = int(request.args.get('sort'))
+    
+    # check if order arg exists
+    if(request.args.get('order')):
+        order = int(request.args.get('order'))
+
+    # check if page limit arg exists
+    if(request.args.get('limit')):
+        page_limit = int(request.args.get('limit'))
+
+    # check if page arg exists
+    if(request.args.get('page')):
+        page = int(request.args.get('page'))
+        
+    # sort by market cap default
+    coins = collection_coins.find().sort(sortby, order).skip(page_limit * (page - 1)).limit(page_limit)
+
+    coins_list = []
+    for n in coins:
+        n['_id'] = str(n['_id'])
+        remove_key = n.pop("prices", None)
+        coins_list.append(n)
+    return {
+        "msg"   : "Success",
+        "total_number" : coins_count,
+        "page" : page,
+        "showing": page_limit,
+        "coins" : coins_list
+    }
+
+
+''' -----------  /coins/:coinid  ----------- '''
+# GET CRYPTO BY ID
+@app.route('/coins/<coinid>', methods = ['GET'])
+def getCoin(coinid:int):
+
+    sortby = "prices.timpestamp"
+    order = -1 # desc -1 / asc 1
+
+    # check if order arg exists
+    if(request.args.get('order')):
+        order = int(request.args.get('order'))
+
+    coin = collection_coins.find_one({"id" : coinid})
+    # check if coinid exists 
+    if (coin is None):
+        return {'msg' : "Cryptocurrency " + coinid + " does not exist. Please double-check id."}
+    
+    coin['_id'] = str(coin['_id'])
+    return {
+        "msg"  : "Success",
+        "result" : coin
+    }
+
+''' -----------  /coins/:coinid  ----------- '''
+# GET CRYPTO BY ID
+@app.route('/coins/<coinid>/prices', methods = ['GET'])
+def getCoinPrices(coinid:int):
+
+    # check if order arg exists
+    if(request.args.get('order')):
+        order = int(request.args.get('order'))
+
+    coin = collection_coins.find_one({"id" : coinid})
+    # check if coinid exists 
+    if (coin is None):
+        return {'msg' : "Cryptocurrency " + coinid + " does not exist. Please double-check id."}
+    
+    return {
+        "msg"  : "Success",
+        "prices" : coin['prices']
+    }
 
 if __name__ == '__main__':
     app.run(debug=True)
