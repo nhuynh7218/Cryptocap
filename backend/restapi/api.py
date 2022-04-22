@@ -1,11 +1,11 @@
 import os, random
-from flask import Flask
+from flask import Flask, request, abort
 from flask_cors import CORS
 # from flask import jsonify
-from flask import request
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # load dotenv lib
 load_dotenv()
@@ -28,6 +28,8 @@ mongo = PyMongo(app)
 collection_news = mongo.db.news
 # coins collection
 collection_coins = mongo.db.coins
+# users collection
+collection_users = mongo.db.users
 
 # RESTAPI INDEX PAGE
 @app.get('/')
@@ -141,12 +143,12 @@ def addANewNews():
     }
 
 # DELETE ALL NEWS ARTICLES
-@app.route('/news', methods = ['DELETE'])
-def deleteAllNews():
-    collection_news.delete_many({})
-    return{
-        "msg": "Deleted Successfully!"
-    }
+# @app.route('/news', methods = ['DELETE'])
+# def deleteAllNews():
+#     collection_news.delete_many({})
+#     return{
+#         "msg": "Deleted Successfully!"
+#     }
 
 
 ''' -----------  /news/:newsid  ----------- '''
@@ -283,7 +285,7 @@ def getCoin(coinid:int):
     }
 
 ''' -----------  /coins/:coinid  ----------- '''
-# GET CRYPTO BY ID
+# GET CRYPTO PRICE HISTORY BY ID
 @app.route('/coins/<coinid>/prices', methods = ['GET'])
 def getCoinPrices(coinid:int):
 
@@ -300,6 +302,49 @@ def getCoinPrices(coinid:int):
         "msg"  : "Success",
         "prices" : coin['prices']
     }
+
+''' -----------  /user/:userid  ----------- '''
+# INSERT USER 
+@app.route('/user', methods = ['POST'])
+def addUser():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    if email is None or password is None:
+        abort(400)    # missing arguments
+
+    user_exists = collection_users.find_one({"email" : email})
+    if (user_exists is not None):
+        return { "msg" : "Email already exists."}
+    
+    user_data = request.get_json()
+    user_data['password'] = generate_password_hash(password)
+    collection_users.insert_one(user_data)
+    return {
+        "msg" : "User successfully added!"
+    }
+
+''' -----------  /user/:userid  ----------- '''
+# GET USER BY ID
+@app.route('/user/<userid>', methods = ['GET'])
+def getUser(userid:int):
+    user = collection_users.find_one({"_id" : ObjectId(userid)})
+    if (user is None):
+        return {'msg' : "No user found with the given id."}
+    user['_id'] = str(user['_id'])
+    remove_key = user.pop("password", None)
+    return {
+        "msg"  : "Success",
+        "result" : user
+    }
+
+# DELETE USER BY ID
+@app.route('/user/<userid>', methods = ['DELETE'])
+def deleteUser(userid:int):
+    collection_users.delete_one({"_id": ObjectId(userid)})
+    return {
+        "msg" : "User deleted successfully!"
+    }
+
 
 if __name__ == '__main__':
     app.run(debug=True)
