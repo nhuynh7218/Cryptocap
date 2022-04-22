@@ -32,7 +32,7 @@ collection = db['coins']
 
 # store the URL in url as parameter for urlopen
 cg_coins_url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100"
-  
+
 # store the response of URL
 response = urlopen(cg_coins_url)
   
@@ -43,7 +43,29 @@ cg_data_json = json.loads(response.read())
 # if JSON contains data more than one entry
 # insert_many is used else inser_one is used
 if isinstance(cg_data_json, list):
-    collection.insert_many(cg_data_json) 
-    print("\n Imported top 100 coins \n")
+    for cg_data in cg_data_json:
+        # check if post exists in the mongodb 
+        exists = collection.count_documents({ "id": cg_data['id'] }) > 0
+        crypto_price = {}
+        if(exists == True):
+            # find crypto id and update with latest data
+            collection.find_one_and_update({"id": cg_data['id']}, {"$set": cg_data}, upsert=True)
+
+            # create an array and store curent price and timestamp
+            crypto_price['price'] = cg_data['current_price']
+            crypto_price['timestamp'] = cg_data['last_updated']
+
+            # append the current price array to existing price list
+            collection.find_one_and_update(
+                {"id": cg_data['id']}, 
+                {"$push": 
+                    {"prices": crypto_price}
+                },
+                upsert=True
+            )
+        else:
+            collection.insert_one(cg_data) 
+
+    # end for loop
 else:
     collection.insert_one(cg_data_json)
