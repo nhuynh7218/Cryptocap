@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Divider, Image, Link, Spinner, useToast } from "@chakra-ui/react"
+import { Divider, Image, Link, Spinner, useColorMode, useToast } from "@chakra-ui/react"
 import { motion } from "framer-motion";
 import { APIService } from "../../../services/APIService";
 import { ArticleInfo } from "../../../interfaces/get";
@@ -8,6 +8,8 @@ import { parseCookies, setCookie, destroyCookie } from 'nookies'
 import { addHours, differenceInHours, formatDistance } from "date-fns";
 
 export default function Article(props: {article: ArticleInfo}) {
+  const { colorMode, toggleColorMode } = useColorMode();
+
   const toast = useToast()
 
     const [relatedArticle, setRelated] = useState<ArticleInfo[] | null>(null)
@@ -133,6 +135,8 @@ export default function Article(props: {article: ArticleInfo}) {
             <motion.p initial={container.hidden}  animate={container.visible} variants={container} className="font-semibold  text-center  px-10 md:px-20 lg:px-0 lg:w-3/4 xl:w-3/5 ">
                 {article.description}
             </motion.p>
+            <Link  href={props.article.url} rel="noreferrer" target="_blank" className={` px-6 text-center text-bold  py-2 ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' } rounded-md`}>Read More</Link>
+
             <Divider  className="py-6 mx-5"/>
 
             <div className="flex flex-col justify-center">
