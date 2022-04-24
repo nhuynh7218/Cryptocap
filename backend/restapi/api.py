@@ -1,11 +1,10 @@
-import os, random
-from flask import Flask
+import os, random, datetime, jwt
+from flask import Flask, request, abort, session # jsonify
 from flask_cors import CORS
-# from flask import jsonify
-from flask import request
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # load dotenv lib
 load_dotenv()
@@ -15,8 +14,10 @@ MongoDB_USER = os.getenv('MongoDB_USER')
 MongoDB_PASS = os.getenv('MongoDB_PASS')
 MongoDB_CLUSTER = os.getenv('MongoDB_CLUSTER')
 MongoDB_NAME = os.getenv('MongoDB_NAME')
+APP_SECRET_KEY = os.getenv('APP_SECRET_KEY')
 
 app = Flask(__name__)
+app.secret_key = APP_SECRET_KEY
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Create a connection using flask_pymongo.
@@ -28,6 +29,8 @@ mongo = PyMongo(app)
 collection_news = mongo.db.news
 # coins collection
 collection_coins = mongo.db.coins
+# users collection
+collection_users = mongo.db.users
 
 # RESTAPI INDEX PAGE
 @app.get('/')
@@ -40,12 +43,7 @@ def index():
     GET:
         Input: {'page':Int, 'limit':Int}
         Output: {'msg':String, 'total_number':Int, 'page':Int, 'showing':Int, news:List}
-````
-TODO:
-    - SORT BY VOTES
-        -news.sort(votes: asec).skip(x).limit(x)
 '''
-
 # GET ALL NEWS ARTICLES
 @app.route('/news', methods = ['GET'])
 def getAllNews():
@@ -141,13 +139,12 @@ def addANewNews():
     }
 
 # DELETE ALL NEWS ARTICLES
-@app.route('/news', methods = ['DELETE'])
-def deleteAllNews():
-    collection_news.delete_many({})
-    return{
-        "msg": "Deleted Successfully!"
-    }
-
+# @app.route('/news', methods = ['DELETE'])
+# def deleteAllNews():
+#     collection_news.delete_many({})
+#     return{
+#         "msg": "Deleted Successfully!"
+#     }
 
 ''' -----------  /news/:newsid  ----------- '''
 # GET NEWS ARTICLE BY ID
@@ -183,7 +180,6 @@ def updateNews(newsid:int):
         return {"msg" : "No news exists with the given id"}
     return {"msg" : "Updated Successfully"}
 
-
 # UPDATE UPVOTE NEWS ARTICLE BY ID
 @app.route('/news/upvote/<newsid>', methods=['GET', 'POST'])
 def updateUpvoteNews(newsid:int):
@@ -212,7 +208,16 @@ def updateDownvoteNews(newsid:int):
         return {"msg" : "The article does not exists with the given id"}
     return {"msg" : "Downvote Updated Successfully"}
 
+''' ----------- END NEWS  ----------- '''
 
+
+''' -----------  /coins  ----------- '''
+'''
+    Methods related to the coins endpoint is written here.
+    GET:
+        Input: {'page':Int, 'limit':Int, 'sort':string, 'order':Int}
+        Output: {'msg':String, 'total_number':Int, 'page':Int, 'showing':Int, coins:List}
+'''
 # GET ALL CRYPTOCURRENCIES
 @app.route('/coins', methods = ['GET'])
 def getAllCoins():
@@ -258,7 +263,6 @@ def getAllCoins():
         "coins" : coins_list
     }
 
-
 ''' -----------  /coins/:coinid  ----------- '''
 # GET CRYPTO BY ID
 @app.route('/coins/<coinid>', methods = ['GET'])
@@ -283,7 +287,7 @@ def getCoin(coinid:int):
     }
 
 ''' -----------  /coins/:coinid  ----------- '''
-# GET CRYPTO BY ID
+# GET CRYPTO PRICE HISTORY BY ID
 @app.route('/coins/<coinid>/prices', methods = ['GET'])
 def getCoinPrices(coinid:int):
 
@@ -300,6 +304,91 @@ def getCoinPrices(coinid:int):
         "msg"  : "Success",
         "prices" : coin['prices']
     }
+''' ----------- END COINS  ----------- '''
+
+
+
+''' -----------  /register  ----------- '''
+@app.route('/register', methods=['POST', 'GET'])
+def registerUser():
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data['email']
+        password = data['password']
+
+        # check if email exists in the db
+        existing_user = collection_users.find_one({"email" : email})
+
+        # check if user exists in the db
+        if existing_user is None:
+            # hash password
+            hashpass = generate_password_hash(password)
+
+            # insert data into db
+            collection_users.insert_one({'email' : email, 'password' : hashpass})
+            
+            # setup email token session
+            exp = datetime.datetime.utcnow() + datetime.timedelta(days = 30)
+            token = jwt.encode({'email': email, 'exp': exp}, app.config['SECRET_KEY'], algorithm='HS256')
+            session['token'] = token
+            return {'msg': 'User successfully added!', 'token': token}
+        return {"msg"  : "That email already exists!"}
+    abort(400) # missing arguments
+
+''' -----------  /user/login  ----------- '''
+@app.route('/login', methods=['POST'])
+def loginUser():
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data['email']
+        login_user = collection_users.find_one({"email" : email})
+
+        if login_user is None:
+            return {"msg"  : "User not found."}
+
+        if not check_password_hash(login_user['password'], data['password']):
+            return {"msg"  : "Password is incorrect."}
+
+        exp = datetime.datetime.utcnow() + datetime.timedelta(days = 30)
+        token = jwt.encode({'email': email, 'exp': exp}, app.config['SECRET_KEY'], algorithm='HS256')
+        session['token'] = token
+        return {'msg': 'Logged in successfully.', 'token': token}
+    abort(400) # missing arguments
+
+
+''' -----------  /user  ----------- '''
+@app.route('/user')
+def indexUser():
+    if 'token' in session:
+        return {"msg"  : 'You are logged in as ' + session['token']}
+    return {"msg"  : "No user session found. Welcome, visitor!"}
+
+
+''' -----------  /user/:token  ----------- '''
+# GET USER BY ID
+@app.route('/user/<token>', methods = ['GET'])
+def getUser(token:int):
+    data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    user = collection_users.find_one({"email" : data['email']})
+    if (user is None):
+        return {'msg' : "No user found with the given id."}
+    user['_id'] = str(user['_id'])
+    remove_key = user.pop("password", None)
+    return {
+        "msg"  : "Success",
+        "result" : user,
+        "token_expiration": data['exp']
+    }
+
+# DELETE USER BY ID
+@app.route('/user/<userid>', methods = ['DELETE'])
+def deleteUser(userid:int):
+    collection_users.delete_one({"_id": ObjectId(userid)})
+    return {
+        "msg" : "User deleted successfully!"
+    }
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
