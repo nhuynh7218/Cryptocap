@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ArticleInfo } from "../interfaces/get";
+import { ArticleInfo, TokenInfo } from "../interfaces/get";
 interface APIFormat<T> {
     news: T
     msg: string
@@ -18,9 +18,35 @@ interface APIPagingFormat<T> {
     limit: number
 
 }
+interface TokenPagingFormat<T> {
+    coins: T
+    msg: string,
+    page: number,
+    showing: number,
+    total_number: number
+
+}
 export class APIService {
     
     public static readonly  baseURL: string = process.env.NODE_ENV == "production" ? "https://api.cryptocap.digital" : "https://api.cryptocap.digital"
+    static async GetTokens(page: number, limit: number = 10) : Promise<{tokens: TokenInfo[], total : number}> {
+        try {
+            const req = await axios.get<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/coins", {
+                params: {
+                    page: page,
+                    limit: limit
+                }
+            })
+            const data = req.data
+            if (data.msg.toLocaleLowerCase() !== 'success') {
+                throw new Error('Server Error')
+            }
+            return {tokens : data.coins, total: data.total_number}
+        } catch (error) {
+            console.log(error)
+            throw new Error()
+        }
+    }
     static async VoteArticle(isUpvote: boolean, articleID: string): Promise<void> {
         const req = await axios.post(this.baseURL + "/news/upvote/" + articleID)
         console.log(req.data)
