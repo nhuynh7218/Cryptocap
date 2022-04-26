@@ -86,7 +86,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
 
             <tr className={`${colorMode == 'light' ? 'bg-white text-black' : 'bg-gray-700 text-gray-100 font-bold'}`}>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
                         <a className="flex items-center">
                             <div className="flex-shrink-0 w-10 h-10">
                                 <img className="w-full h-full rounded-full"
@@ -105,19 +105,19 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                     </Link>
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
                         <a className="whitespace-no-wrap"> {"$" + props.token.current_price.toLocaleString()}</a>
                     </Link>
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
                         <a className={`text-gray-100 ${props.token.price_change_percentage_24h < 0 ? 'text-red-400' : 'text-green-400'} whitespace-no-wrap`}>
                             {props.token.price_change_percentage_24h.toFixed(2) + "%"}
                         </a>
                     </Link>
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
 
                         <a className=" whitespace-no-wrap">
                             {"$" + formatNumber(props.token.market_cap)}
@@ -125,14 +125,14 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                     </Link>
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
                         <a className={`text-gray-100 ${props.token.market_cap_change_percentage_24h < 0 ? 'text-red-400' : 'text-green-400'} whitespace-no-wrap`}>
                             {props.token.market_cap_change_percentage_24h.toFixed(2) + "%"}
                         </a>
                     </Link>
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
 
                         <a className=" whitespace-no-wrap">
                             {props.token.max_supply ? formatNumber(props.token.max_supply) : "Not Reported"}
@@ -140,7 +140,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                     </Link>
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
 
                         <a className=" whitespace-no-wrap">
                             {"$" + (props.token.ath.toLocaleString())} <h1 className={`inline ${props.token.ath_change_percentage < 0 ? 'text-red-400' : 'text-green-400'}`}>{` (${props.token.ath_change_percentage.toFixed(2)}%)`}</h1>
@@ -148,7 +148,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                     </Link>
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
-                    <Link href={`/tokens/${props.token._id}`}>
+                    <Link href={`/tokens/t-${props.token.symbol}`}>
 
                         <a className=" whitespace-no-wrap">
                             {"$" + (props.token.atl.toLocaleString())} <h1 className={`inline ${props.token.atl_change_percentage < 0 ? 'text-red-400' : 'text-green-400'}`}>{` (${props.token.atl_change_percentage.toFixed(2)}%)`}</h1>
@@ -208,7 +208,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                                     <th
                                         className="px-5 py-3 border-b-2 cursor-default uppercase tracking-wider">
                                         <Tooltip label='24H Marketcap change' fontSize='md'>
-                                            MK Cap Change
+                                            24H
                                         </Tooltip>
                                     </th>
                                     <th
@@ -217,14 +217,14 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                                     </th>
                                     <th
                                         className="px-5 py-3 border-b-2 cursor-default uppercase tracking-wider">
-                                        <Tooltip label='All Time High' fontSize='md'>
-                                            ATH
+                                        <Tooltip label='All Time High since listing on an CEX' fontSize='md'>
+                                            *ATH
                                         </Tooltip>
                                     </th>
                                     <th
                                         className="px-5 py-3 border-b-2 cursor-default uppercase tracking-wider">
-                                        <Tooltip label='All Time Low' fontSize='md'>
-                                            ATL
+                                        <Tooltip label='All Time Low since listing on an CEX' fontSize='md'>
+                                            *ATL
                                         </Tooltip>
                                     </th>
                                 </tr>
@@ -243,7 +243,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                             <div className="inline-flex mt-2 xs:mt-0">
                                 <button
                                      onClick={async () => goPreviousPage()}
-                                    className="text-sm text-indigo-50 transition duration-150 hover:bg-indigo-500 bg-indigo-600 font-semibold py-1 px-4 rounded-l">
+                                    className="text-sm text-indigo-50 transition duration-150 hover:bg-orange-500 bg-orange-600 font-semibold py-1 px-4 rounded-l">
                                     {fetchingPage ? 
                                       <Spinner className="mt-1"paddingTop='2px'thickness='3px'speed='0.65s'emptyColor='gray.200'color='blue.500'size='sm'/>
                                         :
@@ -254,7 +254,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                                 <button
                                     disabled={maxPage == currentPage}
                                     onClick={async () => goNextPage()}
-                                    className={`${maxPage == currentPage ? ' cursor-not-allowed bg-gray-500' : 'hover:bg-indigo-500  bg-indigo-600 '} text-sm text-indigo-50 transition duration-150 font-semibold py-1 px-4 rounded-r`}>
+                                    className={`${maxPage == currentPage ? ' cursor-not-allowed bg-gray-500' : 'hover:bg-orange-500  bg-orange-600 '} text-sm text-indigo-50 transition duration-150 font-semibold py-1 px-4 rounded-r`}>
                                     
                                     {fetchingPage ? 
                                       <Spinner className="mt-1"paddingTop='2px'thickness='3px'speed='0.65s'emptyColor='gray.200'color='blue.500'size='sm'/>

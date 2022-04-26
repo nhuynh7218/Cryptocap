@@ -61,8 +61,6 @@ export default function Article(props: {article: ArticleInfo}) {
           maxAge: 360 * 24, //expires in one day
           path: '/',
         })
-  
-        await APIService.VoteArticle(isUpvote, props.article._id)
         const newVote = isUpvote ? totalVotes + 1 : totalVotes - 1
         setVotes(newVote)
         toast({
@@ -72,6 +70,9 @@ export default function Article(props: {article: ArticleInfo}) {
           duration: 3000,
           isClosable: true,
         })
+        await APIService.VoteArticle(isUpvote, props.article._id)
+        
+        
        
       }
     return (
