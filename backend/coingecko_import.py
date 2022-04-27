@@ -30,7 +30,7 @@ collection = db['coins']
 # coins = cg.get_coins_list()
 # markets = cg.get_coins_markets()
 
-# store the URL in url as parameter for urlopen
+# coingecko api url to grab top 100 cryptocurrencies
 cg_coins_url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100"
 
 # store the response of URL
@@ -39,13 +39,13 @@ response = urlopen(cg_coins_url)
 # storing the JSON response from url in data
 cg_data_json = json.loads(response.read())
 
-# Inserting the loaded data in the Collection
-# if JSON contains data more than one entry
-# insert_many is used else inser_one is used
+# inserting the loaded data in the Collection
+# if JSON contains data more than one entry insert_many is used else inser_one is used
 if isinstance(cg_data_json, list):
     for cg_data in cg_data_json:
-        # check if post exists in the mongodb 
+        # check if token exists in the mongodb 
         exists = collection.count_documents({ "id": cg_data['id'] }) > 0
+        # crypto price array
         crypto_price = {}
         if(exists == True):
             # find crypto id and update with latest data
@@ -69,3 +69,5 @@ if isinstance(cg_data_json, list):
     # end for loop
 else:
     collection.insert_one(cg_data_json)
+
+    

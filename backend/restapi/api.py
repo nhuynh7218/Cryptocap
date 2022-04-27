@@ -275,7 +275,7 @@ def getCoin(coinid:int):
     if(request.args.get('order')):
         order = int(request.args.get('order'))
 
-    coin = collection_coins.find_one({"id" : coinid})
+    coin = collection_coins.find_one({"$or": [{"id": coinid}, {"symbol": coinid}]})
     # check if coinid exists 
     if (coin is None):
         return {'msg' : "Cryptocurrency " + coinid + " does not exist. Please double-check id."}
@@ -295,7 +295,7 @@ def getCoinPrices(coinid:int):
     if(request.args.get('order')):
         order = int(request.args.get('order'))
 
-    coin = collection_coins.find_one({"id" : coinid})
+    coin = collection_coins.find_one({"$or": [{"id": coinid}, {"symbol": coinid}]})
     # check if coinid exists 
     if (coin is None):
         return {'msg' : "Cryptocurrency " + coinid + " does not exist. Please double-check id."}
