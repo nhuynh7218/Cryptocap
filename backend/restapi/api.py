@@ -329,7 +329,7 @@ def registerUser():
             
             # setup email token session
             exp = datetime.datetime.utcnow() + datetime.timedelta(days = 30)
-            token = jwt.encode({'email': email, 'exp': exp}, app.config['SECRET_KEY'], algorithm='HS256')
+            token = jwt.encode({'email': email, 'exp': exp}, APP_SECRET_KEY, algorithm='HS256')
             session['token'] = token
             return {'msg': 'User successfully added!', 'token': token}
         return {"msg"  : "That email already exists!"}
@@ -350,9 +350,9 @@ def loginUser():
             return {"msg"  : "Password is incorrect."}
 
         exp = datetime.datetime.utcnow() + datetime.timedelta(days = 30)
-        token = jwt.encode({'email': email, 'exp': exp}, app.config['SECRET_KEY'], algorithm='HS256')
+        token = jwt.encode({'email': email, 'exp': exp}, APP_SECRET_KEY, algorithm='HS256')
         session['token'] = token
-        return {'msg': 'Logged in successfully.', 'token': token}
+        return {'msg': 'Logged in successfully.', 'token': token, 'token_expiration': exp}
     abort(400) # missing arguments
 
 
@@ -368,7 +368,7 @@ def indexUser():
 # GET USER BY ID
 @app.route('/user/<token>', methods = ['GET'])
 def getUser(token:int):
-    data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    data = jwt.decode(token, APP_SECRET_KEY, algorithms=['HS256'])
     user = collection_users.find_one({"email" : data['email']})
     if (user is None):
         return {'msg' : "No user found with the given id."}
@@ -387,8 +387,6 @@ def deleteUser(userid:int):
     return {
         "msg" : "User deleted successfully!"
     }
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
