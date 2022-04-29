@@ -13,7 +13,7 @@ export function NewsCardCell(props: { newsArticle: ArticleInfo }) {
     
         <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 '} flex justify-center delay-50 duration-100   p-5 rounded-b-lg w-40 md:w-60 lg:w-72 group shadow-2xl`}>
             
-            <Link href={`news/article/${props.newsArticle._id}`}>
+            <Link href={`/news/article/${props.newsArticle._id}`}>
 
                 <div className="" >
                 
