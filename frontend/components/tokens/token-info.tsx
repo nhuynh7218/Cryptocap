@@ -1,5 +1,5 @@
 
-import { Tooltip, useColorMode } from "@chakra-ui/react"
+import { Link, Tooltip, useColorMode } from "@chakra-ui/react"
 import { createChart, IChartApi, ISeriesApi } from "lightweight-charts"
 import _ from "lodash"
 import { useRouter } from "next/router"
@@ -263,6 +263,7 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
             {tokenInfo && <div className=" cursor-default text-center font-bold text-lg">
 
                 <Tooltip label="Some calculation is made using ratio instead of supply, if max supply has not been reported. This means at any point xthe token may mint more of itself, thus diluting your position and render our calculation inaccurate.">Calculator</Tooltip>
+                <h1>{`Current Marketcap: ${formatNumber(tokenInfo.market_cap)}`}</h1>
                 <div className="text-center space-y-2 ">
                     <div>
                         <h1>{`If MKCap = `} <h1 className="inline text-green-500 font-bold">{`$${mkValueClac ? formatNumber(mkValueClac) : '?'}`}</h1></h1>
@@ -280,6 +281,15 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
                             formatNumber(Number((worth).toFixed(2)))
                         }`}</h1></h1>
 
+                    </div>
+                    <div>
+                        <h1>Buy Now At</h1>
+                        <div className="flex flex-row justify-center space-x-6">
+                            <Link href="/">CoinBase</Link>
+                            <Link>Binance</Link>
+                            <Link>Kraken</Link>
+                        </div>
+                     
                     </div>
                 </div>
             </div>}

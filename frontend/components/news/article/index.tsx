@@ -134,7 +134,7 @@ export default function Article(props: {article: ArticleInfo}) {
             </div>
      
             <motion.p initial={container.hidden}  animate={container.visible} variants={container} className="font-semibold  text-center  px-10 md:px-20 lg:px-0 lg:w-3/4 xl:w-3/5 ">
-                {article.description}
+                {article.content}
             </motion.p>
             <Link  href={props.article.url} rel="noreferrer" target="_blank" className={` px-6 text-center text-bold  py-2 ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' } rounded-md`}>Read More</Link>
 

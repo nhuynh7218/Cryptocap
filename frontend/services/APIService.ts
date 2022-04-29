@@ -29,6 +29,27 @@ interface TokenPagingFormat<T> {
 export class APIService {
     
     public static readonly  baseURL: string = process.env.NODE_ENV == "production" ? "https://api.cryptocap.digital" : "https://api.cryptocap.digital"
+    static async SignUp(email: string, password: string) : Promise<any> {
+        const req = await axios.post<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/register",{
+            email: email,
+            password: password
+        })
+        const data = req.data
+        console.log(data)
+        return data
+    }
+    static async LogIn(email: string, password: string) : Promise<any>{
+        const req = await axios.post<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/login",{
+            email: email,
+            password: password
+        })
+        const data = req.data
+        console.log(data)
+        return data
+    }
+    static async GetUserInfo(token: string) : Promise<any> {
+
+    }
     static async GetTokens(page: number, limit: number = 10) : Promise<{tokens: TokenInfo[], total : number}> {
         try {
             const req = await axios.get<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/coins", {

@@ -27,6 +27,7 @@ import { useMoralis } from 'react-moralis';
 import { useLockBodyScroll } from '../../hooks/body-scroll-lock';
 import { AppState, APP_STATE } from '../../atom';
 import { useRecoilState } from 'recoil';
+import { APIService } from '../../services/APIService';
 
 
 
@@ -291,11 +292,28 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
 
     const [password, setPassword] = useState<string>('')
     const [confirmPassword, setConfirmPassword] = useState<string>('')
-
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
+    const [success, setSuccess] = useState(false)
+    async function SignUp(event: any){
+      event.preventDefault()
+      const info = await APIService.SignUp(email,password)
+      if (info.msg == "User successfully added!"){
+       
+      }
+      if (info.msg == 'That email already exists!') {
+        setErrorMsg('That email already exists!')
+      }
+      if (info.msg !== "User successfully added!"){
+        setErrorMsg('An error has occured')
+      }
+  }
     return (
-      <form className='flex flex-col space-y-2 pt-2 text-black px-8 '>
-        <input value={email} onChange={(input) => setEmail(input.target.value)} type="email" className={`${email == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Email...'></input>
-        <input value={confirmEmail} onChange={(input) => setConfirmEmail(input.target.value)} type="email" className={`${confirmEmail == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Confirm Email...'></input>
+      <form onSubmit={(e) => SignUp(e)}  className='flex flex-col space-y-2 pt-2 text-black px-8 '>
+       {errorMsg && 
+        <h1 className='text-red-500 font-bold'>{errorMsg}</h1>
+        }
+        <input value={email} onChange={(input) => setEmail(input.target.value)} type="email" className={`${ errorMsg == 'That email already exists!' ? 'border-red-500' : email == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Email...'></input>
+        <input value={confirmEmail} onChange={(input) => setConfirmEmail(input.target.value)} type="email" className={`${errorMsg == 'That email already exists!' ? 'border-red-500' : confirmEmail == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Confirm Email...'></input>
         <input value={password} onChange={(input) => setPassword(input.target.value)} type="password" className={`${password == '' ? 'border-gray-500' : password == confirmPassword ? 'border-green-600' : 'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Password...'></input>
         <input value={confirmPassword}  onChange={(input) => setConfirmPassword(input.target.value)} type="password" className={`${confirmPassword == '' ? 'border-gray-500' : password == confirmPassword ? 'border-green-600' : 'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Confirm Passowrd...'></input>
 
@@ -306,9 +324,27 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
   function LogIn(){
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
-    return (
-      <form className='flex flex-col space-y-2 pt-2 text-black px-8 '>
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
+    const [success, setSuccess] = useState(false)
 
+    async function LogIn(event: any){
+        event.preventDefault()
+        const info = await APIService.LogIn(email,password)
+        if (info.msg == "Logged in successfully."){
+       
+        }
+        if (info.msg == 'User not found.') {
+          setErrorMsg('User not found.')
+        }
+        if (info.msg !== "Logged in successfully."){
+          setErrorMsg('An error has occured')
+        }
+    }
+    return (
+      <form onSubmit={(e) => LogIn(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
+                {errorMsg && 
+                  <h1 className='text-red-500 font-bold'>{errorMsg}</h1>
+                }
                 <input value={email} onChange={(input) => setEmail(input.target.value)} type="email" className={`${email !== '' ? 'border-green-600'  : 'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Email...'></input>
                 <input value={password} onChange={(input) => setPassword(input.target.value)} type="password" className={`${password !== '' ? 'border-green-600' :  'border-red-500' } border-4 px-1 p-1 rounded`} placeholder='Password...'></input>
                 <button type="submit" className={`${( email !== '' && password !== '' )  ? 'hover:bg-green-700 bg-green-600' : 'hover:cursor-not-allowed'} ${colorMode == 'light' ? 'font-black' : 'font-bold text-white'} rounded border-2 py-2`}>Sign In</button>
