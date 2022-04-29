@@ -47,8 +47,23 @@ export class APIService {
             throw new Error()
         }
     }
+    static async GetTokenBySymbol(symbol: string) : Promise<TokenInfo>{
+        try {
+            const req = await axios.get<any>(this.baseURL + "/coins/"+symbol.toLocaleLowerCase(), {
+               
+            })
+            const data = req.data
+            if (data.msg.toLocaleLowerCase() !== 'success') {
+                throw new Error('Server Error')
+            }
+            return data.result
+        } catch (error) {
+            console.log(error)
+            throw new Error()
+        }
+    }
     static async VoteArticle(isUpvote: boolean, articleID: string): Promise<void> {
-        const req = await axios.post(this.baseURL + "/news/upvote/" + articleID)
+        const req = await axios.post(this.baseURL + `/news/${isUpvote ? 'upvote' : 'downvote'}/` + articleID)
         console.log(req.data)
     }
     static async GetInitialNews(): Promise<{news: ArticleInfo[], randomArticle: ArticleInfo[]}> {

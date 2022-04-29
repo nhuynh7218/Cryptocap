@@ -31,7 +31,7 @@ import { useRecoilState } from 'recoil';
 
 
 const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu: string, index: number, link: string }}) => (
-  <NextLink  href={`${props.index == 0 ? '/' : `/${props.link.toLocaleLowerCase()}`}`}>
+  <Link  href={`${props.index == 0 ? '/' : `/${props.link.toLocaleLowerCase()}`}`}>
   <Link
     className = {`${props.currentMenu == props.link.toLocaleLowerCase() ? 'border-2 border-green-500' : 'border-black'}`}
     px={2}
@@ -44,7 +44,7 @@ const NavLink = ({ children, props }: { children: ReactNode, props: {currentMenu
    >
     {children}
   </Link>
-  </NextLink>
+  </Link>
 );
 
 export default function NavBar() {

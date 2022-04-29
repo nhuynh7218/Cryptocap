@@ -20,7 +20,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
     const [fetchingPage, setFetchingPage] = useState(false)
 
     const [maxPage, setMaxPage] = useState(0)
-    // useEffect(() => {
+    
 
     async function goNextPage() {
         setFetchingPage(true)
@@ -84,8 +84,8 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
 
         return (
 
-            <tr className={`${colorMode == 'light' ? 'bg-white text-black' : 'bg-gray-700 text-gray-100 font-bold'}`}>
-                <td className="px-5 py-5 border-b text-sm">
+            <tr className={`${colorMode == 'light' ? 'bg-white hover:bg-gray-200 text-black' : 'bg-gray-700 hover:bg-gray-600 text-gray-100 font-bold  transition-all duration-200'}`}>
+                <td className="px-5 py-5 border-b text-sm ">
                     <Link href={`/tokens/t-${props.token.symbol}`}>
                         <a className="flex items-center">
                             <div className="flex-shrink-0 w-10 h-10">

@@ -6,23 +6,27 @@ import { TokenInfo } from '../../interfaces/get';
 const Chart = dynamic(() => import('../../components/tokens/token-info'), {ssr: false})
 
 function Token(props: {
-    tokenInfo: TokenInfo;
+    tokenInfo: TokenInfo,
     prices: {
         value: number;
         time: string;
-    }[];
+    }[],
+    type: string,
+    route : string,
 }) {
  console.log(props)
   return (
-    <div>
-        <h1>TokenList</h1>
+
         <Chart {...props}/>
         
-    </div>
+  
   )
 }
 
 export async function getServerSideProps(context: any) {
+
+    // type 0: stored
+    // type 1: not stored
     const ctxParam : string = context.params['token-id']
     if (ctxParam.substring(0,2) == "t-") {
         try {
