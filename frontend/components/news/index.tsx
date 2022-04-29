@@ -9,11 +9,11 @@ export function NewsCardCell(props: { newsArticle: ArticleInfo }) {
     const { newsArticle } = props
     return (
         <div className="flex flex-col">
-            <Link  href={newsArticle.url} rel="noreferrer" target="_blank" className={` w-full text-center text-bold  py-2 ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' } rounded-t-md`}>Source</Link>
+            <Link style={{ textDecoration: 'none' }}  href={newsArticle.url} rel="noreferrer" target="_blank" className={` w-full text-center text-bold  py-2 ${colorMode == "light" ? 'bg-green-400 hover:bg-green-300 ' : 'bg-green-700 hover:bg-green-600' } rounded-t-md`}>Source</Link>
     
         <div className={`${colorMode == 'light' ? 'hover:bg-gray-300 bg-gray-100 text-black ' : 'hover:bg-gray-600 bg-gray-700 text-gray-100 '} flex justify-center delay-50 duration-100   p-5 rounded-b-lg w-40 md:w-60 lg:w-72 group shadow-2xl`}>
             
-            <Link href={`/news/article/${props.newsArticle._id}`}>
+            <Link style={{ textDecoration: 'none' }} href={`/news/article/${props.newsArticle._id}`}>
 
                 <div className="" >
                 

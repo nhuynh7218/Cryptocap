@@ -29,6 +29,27 @@ interface TokenPagingFormat<T> {
 export class APIService {
     
     public static readonly  baseURL: string = process.env.NODE_ENV == "production" ? "https://api.cryptocap.digital" : "https://api.cryptocap.digital"
+    static async SignUp(email: string, password: string) : Promise<any> {
+        const req = await axios.post<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/register",{
+            email: email,
+            password: password
+        })
+        const data = req.data
+        console.log(data)
+        return data
+    }
+    static async LogIn(email: string, password: string) : Promise<any>{
+        const req = await axios.post<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/login",{
+            email: email,
+            password: password
+        })
+        const data = req.data
+        console.log(data)
+        return data
+    }
+    static async GetUserInfo(token: string) : Promise<any> {
+
+    }
     static async GetTokens(page: number, limit: number = 10) : Promise<{tokens: TokenInfo[], total : number}> {
         try {
             const req = await axios.get<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/coins", {
@@ -47,8 +68,23 @@ export class APIService {
             throw new Error()
         }
     }
+    static async GetTokenBySymbol(symbol: string) : Promise<TokenInfo>{
+        try {
+            const req = await axios.get<any>(this.baseURL + "/coins/"+symbol.toLocaleLowerCase(), {
+               
+            })
+            const data = req.data
+            if (data.msg.toLocaleLowerCase() !== 'success') {
+                throw new Error('Server Error')
+            }
+            return data.result
+        } catch (error) {
+            console.log(error)
+            throw new Error()
+        }
+    }
     static async VoteArticle(isUpvote: boolean, articleID: string): Promise<void> {
-        const req = await axios.post(this.baseURL + "/news/upvote/" + articleID)
+        const req = await axios.post(this.baseURL + `/news/${isUpvote ? 'upvote' : 'downvote'}/` + articleID)
         console.log(req.data)
     }
     static async GetInitialNews(): Promise<{news: ArticleInfo[], randomArticle: ArticleInfo[]}> {
