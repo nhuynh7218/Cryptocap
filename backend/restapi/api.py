@@ -331,7 +331,11 @@ def registerUser():
             exp = datetime.datetime.utcnow() + datetime.timedelta(days = 30)
             token = jwt.encode({'email': email, 'exp': exp}, APP_SECRET_KEY, algorithm='HS256')
             session['token'] = token
-            return {'msg': 'User successfully added!', 'token': token}
+            
+            user = collection_users.find_one({"email" : email})
+            remove_key = user.pop("password", None)
+            user['_id'] = str(user['_id'])
+            return {'msg': 'Logged in successfully.', 'token': token, 'token_expiration': exp, 'result': user}
         return {"msg"  : "That email already exists!"}
     abort(400) # missing arguments
 
@@ -349,10 +353,15 @@ def loginUser():
         if not check_password_hash(login_user['password'], data['password']):
             return {"msg"  : "Password is incorrect."}
 
+        # setup email token session
         exp = datetime.datetime.utcnow() + datetime.timedelta(days = 30)
         token = jwt.encode({'email': email, 'exp': exp}, APP_SECRET_KEY, algorithm='HS256')
         session['token'] = token
-        return {'msg': 'Logged in successfully.', 'token': token, 'token_expiration': exp}
+       
+        user = collection_users.find_one({"email" : email})
+        remove_key = user.pop("password", None)
+        user['_id'] = str(user['_id'])
+        return {'msg': 'Logged in successfully.', 'token': token, 'token_expiration': exp, 'result': user}
     abort(400) # missing arguments
 
 
@@ -369,11 +378,15 @@ def indexUser():
 @app.route('/user/<token>', methods = ['GET'])
 def getUser(token:int):
     data = jwt.decode(token, APP_SECRET_KEY, algorithms=['HS256'])
-    user = collection_users.find_one({"email" : data['email']})
+    email = data['email']
+    user = collection_users.find_one({"email" : email})
     if (user is None):
-        return {'msg' : "No user found with the given id."}
-    user['_id'] = str(user['_id'])
+        return {'msg' : "Invalid token."}
+    
+    # return user array
+    user = collection_users.find_one({"email" : email})
     remove_key = user.pop("password", None)
+    user['_id'] = str(user['_id'])
     return {
         "msg"  : "Success",
         "result" : user,
