@@ -12,7 +12,7 @@ export function formatNumber(n: number) {
     if (n >= 1e12) return +(n / 1e12).toFixed(1) + "T";
 };
 function Index(props: { tokens: TokenInfo[], total: number }) {
-    const { colorMode, toggleColorMode } = useColorMode();
+    const { colorMode } = useColorMode();
     const [fullTokenList, setFullTokenList] = useState<{ page: number, tokenInfoList: TokenInfo[] }[]>([{ page: 1, tokenInfoList: props.tokens }])
     const [currentPage, setCurrentPage] = useState(1)
     const [currentTokenList, setCurrentTokenList] = useState<{ page: number, tokenInfoList: TokenInfo[] }>(fullTokenList[fullTokenList.length - 1])
@@ -83,7 +83,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
         const { colorMode, toggleColorMode } = useColorMode();
 
         return (
-
+            
             <tr className={`${colorMode == 'light' ? 'bg-white hover:bg-gray-200 text-black' : 'bg-gray-700 hover:bg-gray-600 text-gray-100 font-bold  transition-all duration-200'}`}>
                 <td className="px-5 py-5 border-b text-sm ">
                     <Link href={`/tokens/t-${props.token.symbol}`}>
@@ -223,7 +223,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                                     </th>
                                     <th
                                         className="px-5 py-3 border-b-2 cursor-default uppercase tracking-wider">
-                                        <Tooltip label='All Time Low since listing on an CEX' fontSize='md'>
+                                        <Tooltip aria-required label='All Time Low since listing on an CEX' fontSize='md'>
                                             *ATL
                                         </Tooltip>
                                     </th>

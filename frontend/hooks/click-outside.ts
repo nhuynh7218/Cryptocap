@@ -1,9 +1,14 @@
 import { useEffect } from "react";
+import { useRecoilState } from "recoil";
+import { AppState, APP_STATE } from "../atom";
 
 export function useOnClickOutside(insideRef: any, handler: any) {
+  const [currentAppState, setAppState] = useRecoilState(AppState);
+
     useEffect(
       () => {
         const listener = (event : any) => {
+          if(currentAppState.appState == APP_STATE.LOADING){return}
           // Do nothing if clicking ref's element or descendent elements
           if (!insideRef.current || insideRef.current.contains(event.target)) {
             return;
