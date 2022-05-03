@@ -393,6 +393,7 @@ def getUser(token:int):
         "token_expiration": data['exp']
     }
 
+
 # DELETE USER BY ID
 @app.route('/user/<userid>', methods = ['DELETE'])
 def deleteUser(userid:int):
