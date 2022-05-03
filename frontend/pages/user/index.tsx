@@ -1,9 +1,10 @@
 import type { NextPage } from 'next'
+import UserInfo from '../../components/user'
 
 const User: NextPage = () => {
   return (
 
-    <div>user info</div>
+    <UserInfo/>
 
   )
 }
