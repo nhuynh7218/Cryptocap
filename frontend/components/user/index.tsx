@@ -1,80 +1,635 @@
-import React from "react";
+import { border, Divider, Select, Spinner, Tooltip, useColorMode, useToast } from "@chakra-ui/react";
+import { differenceInMilliseconds } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import _ from "lodash";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { useRecoilState } from "recoil";
+import Web3 from "web3";
+import { AppState, APP_STATE } from "../../atom";
+import { Addresses, StoredUserInfo, User, UserToken } from "../../interfaces/user";
+import { APIService } from "../../services/APIService";
+import { formatNumber } from "../tokens";
+let minABI = [
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
 
+const PopularETH: string[] = [
+    '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
+    '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+    '0x6B3595068778DD592e39A122f4f5a5cF09C90fE2',
+    '0x4d224452801ACEd8B2F0aebE155379bb5D594381'
+
+]
+const PopularBSC: string[] = [
+    '0xc748673057861a797275CD8A068AbB95A902e8de',
+    '0x4Fabb145d64652a948d72533023f6E7A623C7C53'
+
+]
 function UserInfo() {
-    return (
 
-    <div className="bg-gray-200 min-h-screen pt-2 font-mono ">
-        <div className="container mx-auto">
-            <div className="inputs w-full max-w-2xl p-6 mx-auto">
-                <h2 className="text-2xl text-gray-900">Account Setting</h2>
-                <form className="mt-6 border-t border-gray-400 pt-4">
-                    <div className='flex flex-wrap -mx-3 mb-6'>
-                        <div className='w-full md:w-full px-3 mb-6'>
-                            <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2' >email address</label>
-                            <input className='appearance-none block w-full bg-white text-gray-700 border border-gray-400 shadow-inner rounded-md py-3 px-4 leading-tight focus:outline-none  focus:border-gray-500' id='grid-text-1' type='text' placeholder='Enter email'  required/>
-                        </div>
-                        <div className='w-full md:w-full px-3 mb-6 '>
-                            <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2'>password</label>
-                            <button className="appearance-none bg-gray-200 text-gray-900 px-2 py-1 shadow-sm border border-gray-400 rounded-md ">change your password</button>
-                        </div>
-                        <div className='w-full md:w-full px-3 mb-6'>
-                            <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2'>pick your country</label>
-                            <div className="flex-shrink w-full inline-block relative">
-                                <select className="block appearance-none text-gray-600 w-full bg-white border border-gray-400 shadow-inner px-4 py-2 pr-8 rounded">
-                                    <option>choose ...</option>
-                                    <option>USA</option>
-                                    <option>France</option>
-                                    <option>Spain</option>
-                                    <option>UK</option>
-                                </select>
-                                <div className="pointer-events-none absolute top-0 mt-3  right-0 flex items-center px-2 text-gray-600">
-                                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                                </div>
+    const { colorMode } = useColorMode();
+    const [currentAppState, setAppState] = useRecoilState(AppState);
+    const toast = useToast()
+    function logOut() {
+        // we have a listener which will automatically log user out if they touch the 403 page
+        router.push("/403")
+    }
+    const router = useRouter()
+    const [isLoading, setloading] = useState(true)
+    const [hoverAddress, setHoverAddress] = useState('')
+    const [user, setUser] = useState<User | null>(null)
+    const [newToken, setNewToken] = useState<{ chainID: string, tokenAddress: string }>({ chainID: 'BSC', tokenAddress: '' })
+    const [newAddress, setNewAddress] = useState<Addresses>({ walletType: "ETH/BSC", publicAddress: '' })
+
+    const [manuallyAddToken, setManuallyAddToken] = useState(false)
+    async function getUser() {
+        setloading(true)
+
+        const localStorage = window.localStorage.getItem('userInfo')
+        if (!localStorage || localStorage == 'undefined') {
+            logOut()
+            return
+        }
+        const storedUserInfo: StoredUserInfo = JSON.parse(localStorage);
+
+        const tokenExp = new Date(storedUserInfo.token_expiration)
+        const diff = differenceInMilliseconds(tokenExp, new Date())
+        if (diff <= 1000) {
+            logOut()
+            return
+        }
+
+        const token = storedUserInfo.token
+        // const latestUserInfo = await APIService.GetUserInfo(token)
+
+        // setUser(latestUserInfo)
+        const updatedUser: User = {
+            email: 'aaa',
+            publicAddresses: [],
+            tokens: []
+        }
+        setUser(updatedUser)
+        setloading(false)
+    }
+    async function addNewAddress(event: any) {
+        event.preventDefault()
+
+
+        setAppState({ appState: APP_STATE.LOADING, title: '', msg: 'Adding address...' })
+
+
+        const exist = user?.publicAddresses.find((x) => x.publicAddress == newAddress.publicAddress)
+        if (exist) {
+            toast({
+                title: 'You already added this address',
+                status: 'warning',
+                position: "top",
+                duration: 3000,
+                isClosable: true,
+            })
+            setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+            return
+        }
+        if (!user) { return }
+        const newPubAddresses = _.cloneDeep<Addresses[]>(user.publicAddresses)
+        newPubAddresses.push(_.cloneDeep(newAddress))
+
+        const updatedUser: User = {
+            email: user.email,
+            publicAddresses: newPubAddresses,
+            tokens: user.tokens
+        }
+        setNewAddress({ walletType: newAddress.walletType, publicAddress: '' })
+        setUser(updatedUser)
+        setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+
+    }
+    async function addNewToken(event: any) {
+        setAppState({ appState: APP_STATE.LOADING, title: '', msg: 'Detecting token...' })
+
+        event.preventDefault()
+        if (user?.publicAddresses.length == 0) {
+            toast({
+                title: 'Please have at least one public address to use this feature.',
+                status: 'warning',
+                position: "top",
+                duration: 3000,
+                isClosable: true,
+            })
+            setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+            return
+        }
+
+        // var balance = await web3.eth.getBalance(walletAddress); //Will give value in.
+        // Default wallet type is BSC AND ETH, any reputable wallet use the same public address for these two chains
+        const addressesToQuery = user?.publicAddresses.filter((x) => x.walletType == 'ETH/BSC')
+
+        if (newToken.chainID == 'BSC') {
+
+            const mainNet = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet'
+            const web3 = new Web3(new Web3.providers.HttpProvider(mainNet));
+
+            //@ts-ignore
+            let contract = new web3.eth.Contract(minABI, newToken.tokenAddress);
+            if (!addressesToQuery) {
+                toast({
+                    title: 'An error has occured, please try again.',
+                    status: 'warning',
+                    position: "top",
+                    duration: 3000,
+                    isClosable: true,
+                })
+                setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+
+                return
+            }
+            for (var addy of addressesToQuery) {
+                const balance = await contract.methods.balanceOf(addy.publicAddress).call();
+                const tokenName = await contract.methods.name().call();
+                const decimals = await contract.methods.decimals().call();
+                const symbol = await contract.methods.symbol().call();
+                const amtParsed = Number(balance) / Math.pow(10, decimals)
+                if (amtParsed <= 0) {
+                    continue
+                }
+                const newUserToken: UserToken = {
+                    chainID: newToken.chainID,
+                    ownerAddress: addy.publicAddress,
+                    tokenAddress: newToken.tokenAddress,
+                    tokenDecimal: decimals,
+                    amtOwned: amtParsed,
+                    tokenImg: '',
+                    tokenName: tokenName,
+                    tokenSupply: 0,
+                    tokenSymbol: symbol
+                }
+                const deep = _.cloneDeep(user)
+                const index = deep?.tokens.findIndex((x) => x.tokenAddress == newUserToken.tokenAddress && x.ownerAddress == newUserToken.ownerAddress)
+                console.log(index)
+                if (index != undefined && index != -1) {
+                    deep?.tokens.splice(index, 1)
+                }
+                deep?.tokens.push(newUserToken)
+                setUser(deep)
+                if (index != undefined && index != -1) {
+                    toast({
+                        title: 'Token updated!',
+                        status: 'success',
+                        position: "top",
+                        duration: 3000,
+                        isClosable: true,
+                    })
+                    setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+
+                    return
+                }
+                toast({
+                    title: 'Done!',
+                    status: 'success',
+                    position: "top",
+                    duration: 3000,
+                    isClosable: true,
+                })
+
+
+            }
+            const chainID = 56
+        } else if (newToken.chainID == 'ETH') {
+            const mainNet = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/eth/mainnet';
+            const web3 = new Web3(new Web3.providers.HttpProvider(mainNet));
+            //@ts-ignore
+            let contract = new web3.eth.Contract(minABI, newToken.tokenAddress);
+            if (!addressesToQuery) {
+                toast({
+                    title: 'An error has occured, please try again.',
+                    status: 'warning',
+                    position: "top",
+                    duration: 3000,
+                    isClosable: true,
+                })
+                setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+                return
+            }
+
+            for (var addy of addressesToQuery) {
+                try {
+
+                    const balance = await contract.methods.balanceOf(addy.publicAddress).call();
+                    const tokenName = await contract.methods.name().call();
+                    const decimals = await contract.methods.decimals().call();
+                    const symbol = await contract.methods.symbol().call();
+                    const amtParsed = Number(balance) / Math.pow(10, decimals)
+                    if (amtParsed <= 0) {
+                        continue
+                    }
+                    const newUserToken: UserToken = {
+                        chainID: newToken.chainID,
+                        ownerAddress: addy.publicAddress,
+                        tokenAddress: newToken.tokenAddress,
+                        tokenDecimal: decimals,
+                        amtOwned: amtParsed,
+                        tokenImg: '',
+                        tokenName: tokenName,
+                        tokenSupply: 0,
+                        tokenSymbol: symbol
+                    }
+
+                    const deep = _.cloneDeep(user)
+                    const index = deep?.tokens.findIndex((x) => x.tokenAddress == newUserToken.tokenAddress && x.ownerAddress == newUserToken.ownerAddress)
+                    console.log(index)
+                    if (index != undefined && index != -1) {
+                        deep?.tokens.splice(index, 1)
+                    }
+                    deep?.tokens.push(newUserToken)
+                    setUser(deep)
+                    if (index != undefined && index != -1) {
+                        toast({
+                            title: 'Token updated!',
+                            status: 'success',
+                            position: "top",
+                            duration: 3000,
+                            isClosable: true,
+                        })
+                        setAppState({ appState: APP_STATE.NONE, title: 'Adding address...', msg: '' })
+
+                        return
+                    }
+                    toast({
+                        title: 'Token detected and added!',
+                        status: 'success',
+                        position: "top",
+                        duration: 3000,
+                        isClosable: true,
+                    })
+                } catch (error) {
+                    continue
+                }
+
+            }
+            setAppState({ appState: APP_STATE.NONE, title: '', msg: 'Adding address...' })
+
+        }
+
+
+    }
+    async function detectTokens() {
+        setAppState({ appState: APP_STATE.LOADING, title: '', msg: 'Detecting tokens...' })
+
+        if (!user) {
+            logOut()
+            setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+
+            return
+        }
+        console.log(user.publicAddresses)
+        const addressesToQuery = user.publicAddresses.filter((x) => x.walletType == 'ETH/BSC')
+        const userTokens: UserToken[] = []
+        const BSCmainNet = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet'
+        const web3BSC = new Web3(new Web3.providers.HttpProvider(BSCmainNet));
+        const ETHmainNet = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/eth/mainnet';
+        const web3ETH = new Web3(new Web3.providers.HttpProvider(ETHmainNet));
+        // get native token balances
+    
+            // for await (var userAddy of user.publicAddresses){
+            //     try {
+            //         var balance = await web3BSC.eth.getBalance(userAddy.publicAddress); 
+            //         const bal = Number(web3ETH.utils.fromWei(balance))
+            //         if (bal <= 0) {continue}
+            //         // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+            //         const newUserToken: UserToken = {
+            //             chainID: 'BSC',
+            //             ownerAddress: userAddy.publicAddress,
+            //             tokenAddress: 't-BSC',
+            //             tokenDecimal: 18,
+            //             amtOwned: bal,
+            //             tokenImg: '',
+            //             tokenName: 'Binance Smart Chain',
+            //             tokenSupply: 0,
+            //             tokenSymbol: 'BSC'
+            //         }
+            //         userTokens.push(newUserToken)
+
+            //         // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+            //     } catch (error) {
+                    
+            //     }
+              
+
+            // }
+
+            // for await (var userAddy of addressesToQuery){
+            //     try {
+            //         var balance = await web3ETH.eth.getBalance(userAddy.publicAddress); 
+            //         const bal = Number(web3ETH.utils.fromWei(balance))
+            //         if (bal <= 0) {continue}
+            //         // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+            //         const newUserToken: UserToken = {
+            //             chainID: 'ETH',
+            //             ownerAddress: userAddy.publicAddress,
+            //             tokenAddress: 't-ETH',
+            //             tokenDecimal: 18,
+            //             amtOwned: bal,
+            //             tokenImg: '',
+            //             tokenName: 'Ethereum',
+            //             tokenSupply: 0,
+            //             tokenSymbol: 'ETH'
+            //         }
+            //         userTokens.push(newUserToken)
+                   
+            //     } catch (error) {
+                    
+            //     }
+             
+            // }
+    
+
+        
+        for await (var pubs of addressesToQuery) {
+            for await (var bscAddy of PopularBSC) {
+                try {
+                    
+                    //@ts-ignore
+                    let contract = new web3BSC.eth.Contract(minABI, bscAddy);
+
+                    const balance = await contract.methods.balanceOf(pubs.publicAddress).call();
+                    const decimals = await contract.methods.decimals().call();
+                    const amtParsed = Number(balance) / Math.pow(10, decimals)
+                    if (amtParsed <= 0) {
+                        continue
+                    }
+                    const tokenName = await contract.methods.name().call();
+                    const symbol = await contract.methods.symbol().call();
+
+                    const newUserToken: UserToken = {
+                        chainID: 'BSC',
+                        ownerAddress: pubs.publicAddress,
+                        tokenAddress: bscAddy,
+                        tokenDecimal: decimals,
+                        amtOwned: amtParsed,
+                        tokenImg: '',
+                        tokenName: tokenName,
+                        tokenSupply: 0,
+                        tokenSymbol: symbol
+                    }
+                    userTokens.push(newUserToken)
+                } catch (error) {
+                    continue
+                }
+            }
+            for await (var ethAddy of PopularETH) {
+                try {
+        
+                    //@ts-ignore
+                    let contract = new web3ETH.eth.Contract(minABI, ethAddy);
+
+                    const balance = await contract.methods.balanceOf(pubs.publicAddress).call();
+                    const decimals = await contract.methods.decimals().call();
+
+                    const amtParsed = Number(balance) / Math.pow(10, decimals)
+                    if (amtParsed <= 0) {
+                        continue
+                    }
+                    const tokenName = await contract.methods.name().call();
+                    const symbol = await contract.methods.symbol().call();
+
+                    const newUserToken: UserToken = {
+                        chainID: 'ETH',
+                        ownerAddress: pubs.publicAddress,
+                        tokenAddress: ethAddy,
+                        tokenDecimal: decimals,
+                        amtOwned: amtParsed,
+                        tokenImg: '',
+                        tokenName: tokenName,
+                        tokenSupply: 0,
+                        tokenSymbol: symbol
+                    }
+
+                    userTokens.push(newUserToken)
+                } catch (error) {
+                    continue
+                }
+            }
+            
+
+        }
+        let newUser = _.cloneDeep(user)
+            if(userTokens.length == 0){
+                toast({
+                    title: 'No tokens found..',
+                    status: 'warning',
+                    position: "top",
+                    duration: 3000,
+                    isClosable: true,
+                })
+            } else {
+                toast({
+                    title: 'Done!',
+                    status: 'success',
+                    position: "top",
+                    duration: 3000,
+                    isClosable: true,
+                })
+            }
+            newUser.tokens = userTokens
+            setUser(newUser)
+          
+            setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+    }
+    useEffect(() => {
+
+        getUser()
+
+
+    }, [])
+    return (
+        <div className="flex flex-col text-center">
+
+            {isLoading || !user ?
+                <div>
+                    <Spinner className="mt-1" paddingTop='5px' thickness='3px' speed='0.65s' emptyColor='gray.200' color='blue.500' size='lg' />
+                    <button onClick={() => getUser()}> aa</button>
+                    <h1>Fetching your information...</h1>
+                </div>
+                :
+                <div className={`${colorMode == 'light' ? 'bg-gray-200 text-black' : 'bg-gray-800 text-gray-100'}  min-h-screen pt-2 font-mono`}>
+                    <div className="container mx-auto">
+                        <div className="inputs w-full max-w-4xl p-6 mx-auto space-y-4">
+
+                            <h2 className="text-2xl font-bold">Account Information</h2>
+                            <Divider className={`${colorMode == 'light' ? 'bg-black' : 'bg-white'}`} />
+                            <div className="flex flex-col">
+
+                               
+                                <h1 className="pt-3">Add an address</h1>
+                                <form onSubmit={addNewAddress} className="flex flex-row space-x-4 py-2 ">
+
+
+                                    <Select className="text-center" value={newAddress.walletType} onChange={(input) => setNewAddress({ walletType: input.target.value, publicAddress: newAddress.publicAddress })} width={40} variant='Filled' defaultValue={"ETH/BSC"} >
+                                        <option value='ETH/BSC'>ETH/BSC</option>
+                                        <option value='Bitcoin'>Bitcoin</option>
+
+                                    </Select>
+                                    <input placeholder="Your Piblic Address. eg: 0xbc7163918273..." required value={newAddress.publicAddress} onChange={(input) => setNewAddress({ walletType: newAddress.walletType, publicAddress: input.target.value })} type="text" className=" w-full text-black rounded-md p-2 font-bold" />
+                                    <button type="submit" className={`${colorMode == 'light' ? 'bg-green-300 hover:bg-green-200' : 'bg-green-700 hover:bg-green-600'} p-2 px-4 rounded font-bold`}>Add</button>
+                                </form>
                             </div>
-                        </div>
-                        <div className='w-full md:w-full px-3 mb-6'>
-                            <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2'>fav language</label>
-                            <div className="flex-shrink w-full inline-block relative">
-                                <select className="block appearance-none text-gray-600 w-full bg-white border border-gray-400 shadow-inner px-4 py-2 pr-8 rounded">
-                                    <option>choose ...</option>
-                                    <option>English</option>
-                                    <option>France</option>
-                                    <option>Spanish</option>
-                                </select>
-                                <div className="pointer-events-none absolute top-0 mt-3  right-0 flex items-center px-2 text-gray-600">
-                                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                                </div>
+                            <div>
+                               
+
+                                {user.publicAddresses.length == 0 ?
+                                    <div>
+                                        <h1>You don't have addresses on file!</h1>
+
+                                    </div>
+                                    :
+                                    <div className="flex flex-row  justify-center space-x-4">
+                                        <div className="flex flex-col">
+                                            <h1 className=" font-bold underline">Your Addresses</h1>
+                                            
+                                           
+                                            {user.publicAddresses.map((val, index) => {
+                                                return (
+                                                    <div key={index}>
+                                                        {val.walletType == "ETH/BSC" ?
+                                                            <Tooltip label="BSC or ETH chain. Most reputable wallet use same public address for these chain.">
+                                                                <h1 className="inline font-bold cursor-default" >{val.walletType + ": "}</h1>
+                                                            </Tooltip> :
+                                                            <h1 className="inline font-bold" >{val.walletType + ": "}</h1>}
+
+                                                        <h1 onMouseEnter={() => setHoverAddress(val.publicAddress)} onMouseLeave={() => setHoverAddress('')} className={`${hoverAddress == val.publicAddress ? 'text-green-600 font-bold' : ''} cursor-default inline transition-all`}>{val.publicAddress.substring(0, 5) + "..." + val.publicAddress.slice(val.publicAddress.length - 5)}</h1>
+
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                        <div className="flex flex-col">
+                                        <h1 className=" font-bold underline">Your Tokens</h1>
+                                        <div className="space-y-2 space-x-2 grid grid-cols-4 transition-all ">
+                                   
+                                        {user.tokens.map((val, index) => {
+                                            return (
+                                                <div onMouseEnter={() => setHoverAddress(val.ownerAddress)} onMouseLeave={() => setHoverAddress('')} className={` ${hoverAddress == val.ownerAddress ? `text-green-400 font-bold ${colorMode == 'light' ? 'border-green-600' : 'border-green-300'}` : ''} cursor-default border-2  p-2 transition-all`} key={index}>
+                                                    <h1>{val.tokenSymbol}</h1>
+                                                    <h1>{val.amtOwned <= 1000 ? val.amtOwned.toPrecision(3) : formatNumber(val.amtOwned)}</h1>
+                                                    <h1 className={` inline `}>{val.ownerAddress.substring(0, 4) + "..." + val.ownerAddress.slice(val.ownerAddress.length - 3)}</h1>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                        </div>
+                                        
+                                    </div>
+
+                                }
+                                <button onClick={async () => {
+                                    // get btc balance
+                                    await detectTokens()
+                                    // const url = `https://api.blockcypher.com/v1/btc/main/addrs/`
+                                    // const testnet = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/eth/mainnet';
+                                    // const walletAddress = '0x5653bbb15dd5075ef9f0df9860cb54abfac48642';
+
+                                    // const web3 = new Web3(new Web3.providers.HttpProvider(testnet));
+                                    // var balance = await web3.eth.getBalance(walletAddress); //Will give value in.
+                                    // console.log(balance)
+                                    // balance = web3.utils.toDecimal(balance);
+                                    // console.log(balance)
+                                }} className={`${colorMode == 'light' ? 'bg-green-400 hover:bg-green-300' : 'bg-green-700 hover:bg-green-800'} p-2 font-bold m-3 border-2  rounded-md`}>Auto Detect Popular Tokens</button>
+                                <button onClick={() => setManuallyAddToken(!manuallyAddToken)} className={`${colorMode == 'light' ? `${manuallyAddToken ? 'bg-gray-400 hover:bg-green-300' : 'bg-green-400 hover:bg-green-300'}` : `${manuallyAddToken ? 'bg-gray-400 hover:bg-green-600' : 'bg-green-700 hover:bg-green-600'}`} m-3 p-2 font-bold  border-2  rounded-md`}>Detect Manually</button>
+                                <AnimatePresence>
+                                    {manuallyAddToken &&
+                                        <motion.form onSubmit={(e) => addNewToken(e)} initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} action="">
+                                            <section className="flex flex-col justify-center ">
+
+                                                <section className="flex flex-row space-x-5 justify-center">
+                                                    <h1 className="pt-2">Network:</h1>
+                                                    <Select width={40} value={newToken.chainID} onChange={(input) => setNewToken({ chainID: input.target.value, tokenAddress: newToken.tokenAddress })} variant='Filled' defaultValue={"BSC"} >
+                                                        <option value='BSC'>BSC</option>
+                                                        <option value='ETH'>ETH</option>
+
+                                                    </Select>
+                                                </section>
+                                                <section className="flex flex-row space-x-5 pt-6 justify-center">
+                                                    <h1>Token Address:</h1>
+                                                    <input placeholder="Token Address. eg: 0xbe7163918273..." required value={newToken?.tokenAddress} onChange={(input) => setNewToken({ chainID: newToken.chainID, tokenAddress: input.target.value })} type="text" className=" w-full text-black rounded-md p-2 font-bold" />
+                                                </section>
+                                                <section className="flex justify-center">
+                                                    <button type="submit" className={`mt-3 flex ${colorMode == 'light' ? 'bg-green-300 hover:bg-green-200' : 'bg-green-700 hover:bg-green-600'} p-2 px-4 rounded font-bold`}>Detect</button>
+
+                                                </section>
+                                            </section>
+                                        </motion.form>
+                                    }
+                                </AnimatePresence>
                             </div>
-                        </div>
-                        <div className="personal w-full border-t border-gray-400 pt-4">
-                            <h2 className="text-2xl text-gray-900">Personal info:</h2>
-                            <div className="flex items-center justify-between mt-4">
-                                <div className='w-full md:w-1/2 px-3 mb-6'>
-                                    <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2' >first name</label>
-                                    <input className='appearance-none block w-full bg-white text-gray-700 border border-gray-400 shadow-inner rounded-md py-3 px-4 leading-tight focus:outline-none  focus:border-gray-500' type='text'  required/>
-                                </div>
-                                <div className='w-full md:w-1/2 px-3 mb-6'>
-                                    <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2' >last name</label>
-                                    <input className='appearance-none block w-full bg-white text-gray-700 border border-gray-400 shadow-inner rounded-md py-3 px-4 leading-tight focus:outline-none  focus:border-gray-500' type='text'  required/>
-                                </div>
-                            </div>
-                            <div className='w-full md:w-full px-3 mb-6'>
-                                <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2'>user name</label>
-                                <input className='appearance-none block w-full bg-white text-gray-700 border border-gray-400 shadow-inner rounded-md py-3 px-4 leading-tight focus:outline-none  focus:border-gray-500' type='text'  required/>
-                            </div>
-                            <div className='w-full md:w-full px-3 mb-6'>
-                                <label className='block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2' >Bio</label>
-                                <textarea className='bg-gray-100 rounded-md border leading-normal resize-none w-full h-20 py-2 px-3 shadow-inner border border-gray-400 font-medium placeholder-gray-700 focus:outline-none focus:bg-white'  required></textarea>
-                            </div>
-                            <div className="flex justify-end">
-                                <button className="appearance-none bg-gray-200 text-gray-900 px-2 py-1 shadow-sm border border-gray-400 rounded-md mr-3" type="submit">save changes</button>
-                            </div>
+
                         </div>
                     </div>
-                </form>
-            </div>
+                </div>
+
+
+
+
+            }
         </div>
-    </div>
+
     )
 }
 
