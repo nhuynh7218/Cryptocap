@@ -81,7 +81,8 @@ const PopularETH: string[] = [
 ]
 const PopularBSC: string[] = [
     '0xc748673057861a797275CD8A068AbB95A902e8de',
-    '0x4Fabb145d64652a948d72533023f6E7A623C7C53'
+    '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
+    '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56'
 
 ]
 function UserInfo() {
