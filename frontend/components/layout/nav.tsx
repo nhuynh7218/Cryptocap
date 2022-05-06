@@ -28,7 +28,7 @@ import { useLockBodyScroll } from '../../hooks/body-scroll-lock';
 import { AppState, APP_STATE } from '../../atom';
 import { useRecoilState } from 'recoil';
 import { APIService } from '../../services/APIService';
-import { User } from '../../interfaces/user';
+import { StoredUserInfo } from '../../interfaces/user';
 
 
 
@@ -62,6 +62,13 @@ export default function NavBar() {
       setMenu('news')
       return
     }
+    if(currRoute == '/403') {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem('userInfo')
+        setUserInfo(null) 
+      
+      }
+    }
     const routeStripped = currRoute.substring(1)
     setMenu(routeStripped)
 
@@ -87,7 +94,7 @@ export default function NavBar() {
     isAuthenticated,
     user,
     isWeb3EnableLoading } = useMoralis();
-  const [userInfo, setUserInfo] = useState<User | null>(null)
+  const [userInfo, setUserInfo] = useState<StoredUserInfo | null>(null)
 
 
   useEffect(() => {
@@ -141,7 +148,6 @@ export default function NavBar() {
               
               {isWeb3Enabled || userInfo ?
                 <div className='pt-2'>
-                  {userInfo?.email}
                   <UserMenu  userInfo={userInfo} setUserInfo={setUserInfo}/>
                 </div>
                 : isWeb3EnableLoading ?
@@ -182,7 +188,7 @@ export default function NavBar() {
   );
 }
 
-function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: boolean) => void, setUserInfo: (u: User) => void }) {
+function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: boolean) => void, setUserInfo: (u: StoredUserInfo) => void }) {
   useLockBodyScroll()
   const {enableWeb3} = useMoralis();
   // useEffect(() => {
@@ -288,7 +294,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
       </div>
     )
   }
-  function SignUp(props : { setUserInfo: (u: User) => void, toggleActive: (b: boolean) => void}) {
+  function SignUp(props : { setUserInfo: (u: StoredUserInfo) => void, toggleActive: (b: boolean) => void}) {
     const [email, setEmail] = useState<string>('')
     const [confirmEmail, setConfirmEmail] = useState<string>('')
 
@@ -305,8 +311,15 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
       
 
       if (info.msg == "User successfully added!") {
-        info.isOurUser = true
-        props.setUserInfo(info)
+        const user: StoredUserInfo = {
+          email: info.result.email,
+          token_expiration: info.token_expiration,
+          isOurUser : true,
+          token: info.token
+          
+
+        }
+        props.setUserInfo(user)
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
         props.toggleActive(false)
 
@@ -340,7 +353,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
       </form>
     )
   }
-  function LogIn(props : { setUserInfo: (u: User) => void, toggleActive: (b: boolean) => void}) {
+  function LogIn(props : { setUserInfo: (u: StoredUserInfo) => void, toggleActive: (b: boolean) => void}) {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined)
@@ -351,8 +364,17 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
       event.preventDefault()
       const info = await APIService.LogIn(email, password)
       if (info.msg == "Logged in successfully.") {
-        info.isOurUser = true
-        props.setUserInfo(info)
+      
+        const user: StoredUserInfo = {
+          email: info.result.email,
+          token_expiration: info.token_expiration,
+          isOurUser : true,
+          token: info.token
+
+          
+
+        }
+        props.setUserInfo(user)
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
         props.toggleActive(false)
         
@@ -466,12 +488,13 @@ export function ClickOutSideModalWrapper(props: { children: JSX.Element, isActiv
 
 
 
-function UserMenu( props: {userInfo : User | null, setUserInfo : (u: User | null) => void}) {
+function UserMenu( props: {userInfo : StoredUserInfo | null, setUserInfo : (u: StoredUserInfo | null) => void}) {
   const { account, logout } = useMoralis();
   const Web3 = require('web3')
   function logOut(){
-    window.localStorage.removeItem('userInfo')
     props.setUserInfo(null)
+    window.localStorage.removeItem('userInfo')
+   
     
   }
   useEffect(()=>{
@@ -513,17 +536,16 @@ function UserMenu( props: {userInfo : User | null, setUserInfo : (u: User | null
           />
         </Center>
         <br />
-        <Center>
-          <button onClick={() =>{console.log(window.localStorage)}}>asdasd</button>
-        <h1>{props.userInfo?.isOurUser}</h1>
-          <p>{account}</p>
+        <Center className='flex flex-col'>
+          <h1>{props.userInfo?.isOurUser ? 'Yes' : 'No'}</h1>
+          <p>{props.userInfo?.email}</p>
         </Center>
         <br />
         <MenuDivider />
         <MenuItem><Link href='/user'>Wallet Info</Link></MenuItem>
-        <MenuItem onClick={async () => {
+        {/* <MenuItem onClick={async () => {
 
-        }}>Settings</MenuItem>
+        }}>Settings</MenuItem> */}
         <MenuItem onClick={() => logOut()}>Logout</MenuItem>
       </MenuList>
     </Menu>

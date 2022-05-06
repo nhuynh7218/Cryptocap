@@ -80,10 +80,8 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
 
     }
     function TableRow(props: { token: TokenInfo }) {
-        const { colorMode, toggleColorMode } = useColorMode();
-
+        const { colorMode } = useColorMode();
         return (
-            
             <tr className={`${colorMode == 'light' ? 'bg-white hover:bg-gray-200 text-black' : 'bg-gray-700 hover:bg-gray-600 text-gray-100 font-bold  transition-all duration-200'}`}>
                 <td className="px-5 py-5 border-b text-sm ">
                     <Link href={`/tokens/t-${props.token.symbol}`}>
@@ -98,9 +96,7 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                                 <p className=" whitespace-no-wrap">
                                     {props.token.name}
                                 </p>
-
                             </div>
-
                         </a>
                     </Link>
                 </td>
@@ -133,7 +129,6 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
                     <Link href={`/tokens/t-${props.token.symbol}`}>
-
                         <a className=" whitespace-no-wrap">
                             {props.token.max_supply ? formatNumber(props.token.max_supply) : "Not Reported"}
                         </a>
@@ -141,7 +136,6 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
                     <Link href={`/tokens/t-${props.token.symbol}`}>
-
                         <a className=" whitespace-no-wrap">
                             {"$" + (props.token.ath.toLocaleString())} <h1 className={`inline ${props.token.ath_change_percentage < 0 ? 'text-red-400' : 'text-green-400'}`}>{` (${props.token.ath_change_percentage.toFixed(2)}%)`}</h1>
                         </a>
@@ -149,7 +143,6 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                 </td>
                 <td className="px-5 py-5 border-b text-sm">
                     <Link href={`/tokens/t-${props.token.symbol}`}>
-
                         <a className=" whitespace-no-wrap">
                             {"$" + (props.token.atl.toLocaleString())} <h1 className={`inline ${props.token.atl_change_percentage < 0 ? 'text-red-400' : 'text-green-400'}`}>{` (${props.token.atl_change_percentage.toFixed(2)}%)`}</h1>
                         </a>
@@ -161,22 +154,8 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
     }
     return (
         <div className={`${colorMode == 'light' ? 'bg-white' : 'bg-gray-900'} p-8 rounded-md w-full`}>
-            <div className=" flex items-center justify-between pb-6">
-             
+            <div className=" flex items-center justify-between pb-6">    
                 <div className="flex items-center justify-between">
-                    {/* <div className={`flex ${colorMode == 'light' ? 'bg-gray-50' : 'bg-gray-800'} items-center p-2 rounded-md`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        <input className={`${colorMode == 'light' ? 'bg-gray-50' : 'bg-gray-800'} outline-none ml-1 block `} type="text" name="" id="" placeholder="search..." />
-                    </div> */}
-                    {/* <div className="lg:ml-40 ml-10 space-x-8">
-                        <button className="bg-indigo-600 px-4 py-2 rounded-md text-white font-semibold tracking-wide cursor-pointer">New Report</button>
-                        <button className="bg-indigo-600 px-4 py-2 rounded-md text-white font-semibold tracking-wide cursor-pointer">Create</button>
-                    </div> */}
                 </div>
             </div>
             <div >
@@ -188,7 +167,6 @@ function Index(props: { tokens: TokenInfo[], total: number }) {
                                     <th
                                         className="px-5 py-3  border-b-2  uppercase tracking-wider">
                                         Name
-
                                     </th>
                                     <th
                                         className="px-5 py-3 border-b-2  uppercase tracking-wider">

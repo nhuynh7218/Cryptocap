@@ -261,7 +261,7 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
 
             </div>
             {!tokenInfo &&
-                <div>
+                <div className="flex flex-col justify-center text-center">
                     <Spinner className="mt-1"paddingTop='2px'thickness='3px'speed='0.65s'emptyColor='gray.200'color='blue.500'size='sm'/>
                     <h1>Loading Calculator</h1>
                 </div>

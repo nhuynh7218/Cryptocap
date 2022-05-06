@@ -26,11 +26,22 @@ interface TokenPagingFormat<T> {
     total_number: number
 
 }
+export interface Result {
+    _id: string;
+    email: string;
+}
+
+export interface UserApiFormat {
+    msg: string;
+    result: any;
+    token_expiration: number;
+    token: string;
+}
 export class APIService {
     
     public static readonly  baseURL: string = process.env.NODE_ENV == "production" ? "https://api.cryptocap.digital" : "https://api.cryptocap.digital"
-    static async SignUp(email: string, password: string) : Promise<any> {
-        const req = await axios.post<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/register",{
+    static async SignUp(email: string, password: string) : Promise<UserApiFormat> {
+        const req = await axios.post<UserApiFormat>(this.baseURL + "/register",{
             email: email,
             password: password
         })
@@ -38,8 +49,8 @@ export class APIService {
         console.log(data)
         return data
     }
-    static async LogIn(email: string, password: string) : Promise<any>{
-        const req = await axios.post<TokenPagingFormat<TokenInfo[]>>(this.baseURL + "/login",{
+    static async LogIn(email: string, password: string) : Promise<UserApiFormat>{
+        const req = await axios.post<UserApiFormat>(this.baseURL + "/login",{
             email: email,
             password: password
         })
@@ -48,7 +59,10 @@ export class APIService {
         return data
     }
     static async GetUserInfo(token: string) : Promise<any> {
-
+        const req = await axios.get<any>(this.baseURL + "/user/"+token)
+        const data = req.data
+        console.log(data)
+        return data
     }
     static async GetTokens(page: number, limit: number = 10) : Promise<{tokens: TokenInfo[], total : number}> {
         try {
