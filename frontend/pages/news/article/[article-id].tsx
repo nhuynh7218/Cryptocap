@@ -4,12 +4,12 @@ import Article from "../../../components/news/article";
 import { ArticleInfo } from "../../../interfaces/get";
 import { APIService } from "../../../services/APIService";
 
-function ArticleInfo(this: any, props : {article:ArticleInfo}) {
+function ArticleInfo(props : {article:ArticleInfo}) {
     return (
         <><Article {...props} /><DiscussionEmbed
             shortname='Cryptocap'
             config={{
-                url: 'cryptocap.digital/news/article/' + props.article._id,
+                url: 'https://cryptocap.digital/news/article/' + props.article._id,
                 identifier: 'cryptocap' + props.article._id,
                 title: 'cryptocap' + props.article._id,
                 language: 'eng'	
