@@ -106,8 +106,11 @@ function UserInfo() {
         setloading(true)
 
         const localStorage = window.localStorage.getItem('userInfo')
-        if (!localStorage || localStorage == 'undefined') {
+        console.log(localStorage)
+        if (!localStorage || localStorage == 'undefined' || localStorage == null || localStorage == "null") {
+            console.log("here")
             logOut()
+            setloading(false)
             return
         }
         const storedUserInfo: StoredUserInfo = JSON.parse(localStorage);
