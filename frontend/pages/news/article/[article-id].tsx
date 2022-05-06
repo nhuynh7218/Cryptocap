@@ -1,11 +1,19 @@
+import { DiscussionEmbed } from "disqus-react";
 import React from "react";
 import Article from "../../../components/news/article";
 import { ArticleInfo } from "../../../interfaces/get";
 import { APIService } from "../../../services/APIService";
 
-function ArticleInfo(props : {article:ArticleInfo}) {
+function ArticleInfo(this: any, props : {article:ArticleInfo}) {
     return (
-        <Article {...props}/>
+        <><Article {...props} /><DiscussionEmbed
+            shortname='Cryptocap'
+            config={{
+                url: 'cryptocap.digital/news/article/' + props.article._id,
+                identifier: 'cryptocap' + props.article._id,
+                title: 'cryptocap' + props.article._id,
+                language: 'eng'	
+            }} /></>
     )
 }
 export async function getServerSideProps(ctx: {params: any, req : Request, res: Response}) {
