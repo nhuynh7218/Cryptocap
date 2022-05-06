@@ -348,57 +348,57 @@ function UserInfo() {
         const web3ETH = new Web3(new Web3.providers.HttpProvider(ETHmainNet));
         // get native token balances
     
-            // for await (var userAddy of user.publicAddresses){
-            //     try {
-            //         var balance = await web3BSC.eth.getBalance(userAddy.publicAddress); 
-            //         const bal = Number(web3ETH.utils.fromWei(balance))
-            //         if (bal <= 0) {continue}
-            //         // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
-            //         const newUserToken: UserToken = {
-            //             chainID: 'BSC',
-            //             ownerAddress: userAddy.publicAddress,
-            //             tokenAddress: 't-BSC',
-            //             tokenDecimal: 18,
-            //             amtOwned: bal,
-            //             tokenImg: '',
-            //             tokenName: 'Binance Smart Chain',
-            //             tokenSupply: 0,
-            //             tokenSymbol: 'BSC'
-            //         }
-            //         userTokens.push(newUserToken)
+            for await (var userAddy of user.publicAddresses){
+                try {
+                    var balance = await web3BSC.eth.getBalance(userAddy.publicAddress); 
+                    const bal = Number(web3ETH.utils.fromWei(balance))
+                    if (bal <= 0) {continue}
+                    // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+                    const newUserToken: UserToken = {
+                        chainID: 'BSC',
+                        ownerAddress: userAddy.publicAddress,
+                        tokenAddress: 't-BSC',
+                        tokenDecimal: 18,
+                        amtOwned: bal,
+                        tokenImg: '',
+                        tokenName: 'Binance Smart Chain',
+                        tokenSupply: 0,
+                        tokenSymbol: 'BSC'
+                    }
+                    userTokens.push(newUserToken)
 
-            //         // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
-            //     } catch (error) {
+                    // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+                } catch (error) {
                     
-            //     }
+                }
               
 
-            // }
+            }
 
-            // for await (var userAddy of addressesToQuery){
-            //     try {
-            //         var balance = await web3ETH.eth.getBalance(userAddy.publicAddress); 
-            //         const bal = Number(web3ETH.utils.fromWei(balance))
-            //         if (bal <= 0) {continue}
-            //         // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
-            //         const newUserToken: UserToken = {
-            //             chainID: 'ETH',
-            //             ownerAddress: userAddy.publicAddress,
-            //             tokenAddress: 't-ETH',
-            //             tokenDecimal: 18,
-            //             amtOwned: bal,
-            //             tokenImg: '',
-            //             tokenName: 'Ethereum',
-            //             tokenSupply: 0,
-            //             tokenSymbol: 'ETH'
-            //         }
-            //         userTokens.push(newUserToken)
+            for await (var userAddy of addressesToQuery){
+                try {
+                    var balance = await web3ETH.eth.getBalance(userAddy.publicAddress); 
+                    const bal = Number(web3ETH.utils.fromWei(balance))
+                    if (bal <= 0) {continue}
+                    // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+                    const newUserToken: UserToken = {
+                        chainID: 'ETH',
+                        ownerAddress: userAddy.publicAddress,
+                        tokenAddress: 't-ETH',
+                        tokenDecimal: 18,
+                        amtOwned: bal,
+                        tokenImg: '',
+                        tokenName: 'Ethereum',
+                        tokenSupply: 0,
+                        tokenSymbol: 'ETH'
+                    }
+                    userTokens.push(newUserToken)
                    
-            //     } catch (error) {
+                } catch (error) {
                     
-            //     }
+                }
              
-            // }
+            }
     
 
         
@@ -471,6 +471,8 @@ function UserInfo() {
 
         }
         let newUser = _.cloneDeep(user)
+        let notIn = _.differenceBy(newUser.tokens, userTokens, "tokenAddress")
+        const concatted = _.concat(notIn, userTokens)
             if(userTokens.length == 0){
                 toast({
                     title: 'No tokens found..',
@@ -488,7 +490,7 @@ function UserInfo() {
                     isClosable: true,
                 })
             }
-            newUser.tokens = userTokens
+            newUser.tokens = concatted
             setUser(newUser)
           
             setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
@@ -536,7 +538,7 @@ function UserInfo() {
 
                                 {user.publicAddresses.length == 0 ?
                                     <div>
-                                        <h1>You don't have addresses on file!</h1>
+                                        <h1>{`You don't have addresses on file!`}</h1>
 
                                     </div>
                                     :
