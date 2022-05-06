@@ -1,4 +1,5 @@
 import { border, Divider, Select, Spinner, Tooltip, useColorMode, useToast } from "@chakra-ui/react";
+import axios from "axios";
 import { differenceInMilliseconds } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import _ from "lodash";
@@ -130,6 +131,10 @@ function UserInfo() {
         setloading(false)
     }
     async function addNewAddress(event: any) {
+        if (!user) {
+            logOut()
+            return
+        }
         event.preventDefault()
 
 
@@ -137,12 +142,60 @@ function UserInfo() {
 
 
         const exist = user?.publicAddresses.find((x) => x.publicAddress == newAddress.publicAddress)
+        if (newAddress.walletType == "Bitcoin") {
+            try {
+
+                const req = await axios.get("https://api.blockcypher.com/v1/btc/main/addrs/" + newAddress.publicAddress)
+                const data = req.data
+                const bal = data['final_balance']
+                const parsed = Number(bal) / Math.pow(10, 8)
+                console.log(parsed)
+                const newUserToken: UserToken = {
+                    chainID: "BTC",
+                    ownerAddress: newAddress.publicAddress,
+                    tokenAddress: "t-BTC",
+                    tokenDecimal: 8,
+                    amtOwned: parsed,
+                    tokenImg: '',
+                    tokenName: "Bitcoin",
+                    tokenSupply: 0,
+                    tokenSymbol: "BTC"
+                }
+                const usr = _.cloneDeep(user)
+                usr.publicAddresses.push(newAddress)
+                usr.tokens.push(newUserToken)
+                setUser(usr)
+                setAppState({ appState: APP_STATE.NONE, title: '', msg: 'Adding address...' })
+                toast({
+                    title: 'BTC wallet detected and added!',
+                    status: 'success',
+                    position: "top",
+                    duration: 1000,
+                    isClosable: true,
+                })
+                setNewAddress({ walletType: newAddress.walletType, publicAddress: '' })
+
+                return
+            } catch (error) {
+                console.log(error)
+                toast({
+                    title: 'An error has occured, either invalid address or server side error.',
+                    status: 'error',
+                    position: "top",
+                    duration: 3300,
+                    isClosable: true,
+                })
+                setAppState({ appState: APP_STATE.NONE, title: '', msg: 'Adding address...' })
+                return
+
+            }
+        }
         if (exist) {
             toast({
                 title: 'You already added this address',
                 status: 'warning',
                 position: "top",
-                duration: 3000,
+                duration: 2000,
                 isClosable: true,
             })
             setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
@@ -159,8 +212,25 @@ function UserInfo() {
         }
         setNewAddress({ walletType: newAddress.walletType, publicAddress: '' })
         setUser(updatedUser)
+        toast({
+            title: 'Address added! Click Auto Detect or add coins manually!',
+            status: 'success',
+            position: "top",
+            duration: 1000,
+            isClosable: true,
+        })
         setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
 
+    }
+    function deleteAddress(index: number) {
+        if (!user) {
+            logOut()
+            return
+        }
+        let usr = _.cloneDeep(user)
+        usr.tokens = usr.tokens.filter((x) => x.ownerAddress != usr.publicAddresses[index].publicAddress)
+        usr.publicAddresses.splice(index,1)
+        setUser(usr)
     }
     async function addNewToken(event: any) {
         setAppState({ appState: APP_STATE.LOADING, title: '', msg: 'Detecting token...' })
@@ -171,7 +241,7 @@ function UserInfo() {
                 title: 'Please have at least one public address to use this feature.',
                 status: 'warning',
                 position: "top",
-                duration: 3000,
+                duration: 2000,
                 isClosable: true,
             })
             setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
@@ -201,7 +271,10 @@ function UserInfo() {
 
                 return
             }
-            for (var addy of addressesToQuery) {
+            for await (var addy of addressesToQuery) {
+                try {
+                    
+                
                 const balance = await contract.methods.balanceOf(addy.publicAddress).call();
                 const tokenName = await contract.methods.name().call();
                 const decimals = await contract.methods.decimals().call();
@@ -234,7 +307,7 @@ function UserInfo() {
                         title: 'Token updated!',
                         status: 'success',
                         position: "top",
-                        duration: 3000,
+                        duration: 1000,
                         isClosable: true,
                     })
                     setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
@@ -245,9 +318,12 @@ function UserInfo() {
                     title: 'Done!',
                     status: 'success',
                     position: "top",
-                    duration: 3000,
+                    duration: 1000,
                     isClosable: true,
                 })
+            } catch (error) {
+                   continue 
+            }
 
 
             }
@@ -262,7 +338,7 @@ function UserInfo() {
                     title: 'An error has occured, please try again.',
                     status: 'warning',
                     position: "top",
-                    duration: 3000,
+                    duration: 2000,
                     isClosable: true,
                 })
                 setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
@@ -305,7 +381,7 @@ function UserInfo() {
                             title: 'Token updated!',
                             status: 'success',
                             position: "top",
-                            duration: 3000,
+                            duration: 1000,
                             isClosable: true,
                         })
                         setAppState({ appState: APP_STATE.NONE, title: 'Adding address...', msg: '' })
@@ -316,7 +392,7 @@ function UserInfo() {
                         title: 'Token detected and added!',
                         status: 'success',
                         position: "top",
-                        duration: 3000,
+                        duration: 1000,
                         isClosable: true,
                     })
                 } catch (error) {
@@ -324,9 +400,9 @@ function UserInfo() {
                 }
 
             }
-            setAppState({ appState: APP_STATE.NONE, title: '', msg: 'Adding address...' })
 
         }
+        setAppState({ appState: APP_STATE.NONE, title: '', msg: 'Adding address...' })
 
 
     }
@@ -347,65 +423,65 @@ function UserInfo() {
         const ETHmainNet = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/eth/mainnet';
         const web3ETH = new Web3(new Web3.providers.HttpProvider(ETHmainNet));
         // get native token balances
-    
-            for await (var userAddy of user.publicAddresses){
-                try {
-                    var balance = await web3BSC.eth.getBalance(userAddy.publicAddress); 
-                    const bal = Number(web3ETH.utils.fromWei(balance))
-                    if (bal <= 0) {continue}
-                    // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
-                    const newUserToken: UserToken = {
-                        chainID: 'BSC',
-                        ownerAddress: userAddy.publicAddress,
-                        tokenAddress: 't-BSC',
-                        tokenDecimal: 18,
-                        amtOwned: bal,
-                        tokenImg: '',
-                        tokenName: 'Binance Smart Chain',
-                        tokenSupply: 0,
-                        tokenSymbol: 'BSC'
-                    }
-                    userTokens.push(newUserToken)
 
-                    // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
-                } catch (error) {
-                    
+        for await (var userAddy of user.publicAddresses) {
+            try {
+                var balance = await web3BSC.eth.getBalance(userAddy.publicAddress);
+                const bal = Number(web3ETH.utils.fromWei(balance))
+                if (bal <= 0) { continue }
+                // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+                const newUserToken: UserToken = {
+                    chainID: 'BSC',
+                    ownerAddress: userAddy.publicAddress,
+                    tokenAddress: 't-BSC',
+                    tokenDecimal: 18,
+                    amtOwned: bal,
+                    tokenImg: '',
+                    tokenName: 'Binance Smart Chain',
+                    tokenSupply: 0,
+                    tokenSymbol: 'BSC'
                 }
-              
+                userTokens.push(newUserToken)
+
+                // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+            } catch (error) {
 
             }
 
-            for await (var userAddy of addressesToQuery){
-                try {
-                    var balance = await web3ETH.eth.getBalance(userAddy.publicAddress); 
-                    const bal = Number(web3ETH.utils.fromWei(balance))
-                    if (bal <= 0) {continue}
-                    // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
-                    const newUserToken: UserToken = {
-                        chainID: 'ETH',
-                        ownerAddress: userAddy.publicAddress,
-                        tokenAddress: 't-ETH',
-                        tokenDecimal: 18,
-                        amtOwned: bal,
-                        tokenImg: '',
-                        tokenName: 'Ethereum',
-                        tokenSupply: 0,
-                        tokenSymbol: 'ETH'
-                    }
-                    userTokens.push(newUserToken)
-                   
-                } catch (error) {
-                    
-                }
-             
-            }
-    
 
-        
+        }
+
+        for await (var userAddy of addressesToQuery) {
+            try {
+                var balance = await web3ETH.eth.getBalance(userAddy.publicAddress);
+                const bal = Number(web3ETH.utils.fromWei(balance))
+                if (bal <= 0) { continue }
+                // const balanceBN = web3ETH.utils.toBN(balance).div(web3ETH.utils.toBN(10).pow(web3ETH.utils.toBN(18)));
+                const newUserToken: UserToken = {
+                    chainID: 'ETH',
+                    ownerAddress: userAddy.publicAddress,
+                    tokenAddress: 't-ETH',
+                    tokenDecimal: 18,
+                    amtOwned: bal,
+                    tokenImg: '',
+                    tokenName: 'Ethereum',
+                    tokenSupply: 0,
+                    tokenSymbol: 'ETH'
+                }
+                userTokens.push(newUserToken)
+
+            } catch (error) {
+
+            }
+
+        }
+
+
+
         for await (var pubs of addressesToQuery) {
             for await (var bscAddy of PopularBSC) {
                 try {
-                    
+
                     //@ts-ignore
                     let contract = new web3BSC.eth.Contract(minABI, bscAddy);
 
@@ -436,7 +512,7 @@ function UserInfo() {
             }
             for await (var ethAddy of PopularETH) {
                 try {
-        
+
                     //@ts-ignore
                     let contract = new web3ETH.eth.Contract(minABI, ethAddy);
 
@@ -467,33 +543,33 @@ function UserInfo() {
                     continue
                 }
             }
-            
+
 
         }
         let newUser = _.cloneDeep(user)
         let notIn = _.differenceBy(newUser.tokens, userTokens, "tokenAddress")
         const concatted = _.concat(notIn, userTokens)
-            if(userTokens.length == 0){
-                toast({
-                    title: 'No tokens found..',
-                    status: 'warning',
-                    position: "top",
-                    duration: 3000,
-                    isClosable: true,
-                })
-            } else {
-                toast({
-                    title: 'Done!',
-                    status: 'success',
-                    position: "top",
-                    duration: 3000,
-                    isClosable: true,
-                })
-            }
-            newUser.tokens = concatted
-            setUser(newUser)
-          
-            setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
+        if (userTokens.length == 0) {
+            toast({
+                title: 'No tokens found..',
+                status: 'warning',
+                position: "top",
+                duration: 2000,
+                isClosable: true,
+            })
+        } else {
+            toast({
+                title: 'Done!',
+                status: 'success',
+                position: "top",
+                duration: 2000,
+                isClosable: true,
+            })
+        }
+        newUser.tokens = concatted
+        setUser(newUser)
+
+        setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
     }
     useEffect(() => {
 
@@ -519,7 +595,7 @@ function UserInfo() {
                             <Divider className={`${colorMode == 'light' ? 'bg-black' : 'bg-white'}`} />
                             <div className="flex flex-col">
 
-                               
+
                                 <h1 className="pt-3">Add an address</h1>
                                 <form onSubmit={addNewAddress} className="flex flex-row space-x-4 py-2 ">
 
@@ -534,7 +610,7 @@ function UserInfo() {
                                 </form>
                             </div>
                             <div>
-                               
+
 
                                 {user.publicAddresses.length == 0 ?
                                     <div>
@@ -543,14 +619,20 @@ function UserInfo() {
                                     </div>
                                     :
                                     <div className="flex flex-row  justify-center space-x-4">
-                                        <div className="flex flex-col">
+                                        <div className="flex flex-col transition-all">
                                             <h1 className=" font-bold underline">Your Addresses</h1>
-                                            
-                                           
+
+
                                             {user.publicAddresses.map((val, index) => {
                                                 return (
                                                     <div key={index}>
+                                                        <button onClick={() => deleteAddress(index)} className="hover:scale-150 transition-all ">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="inline h-5 w-5 pb-0.5" fill="none" viewBox="0 0 24 24" stroke="red" strokeWidth="2">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                                            </svg>
+                                                        </button>
                                                         {val.walletType == "ETH/BSC" ?
+
                                                             <Tooltip label="BSC or ETH chain. Most reputable wallet use same public address for these chain.">
                                                                 <h1 className="inline font-bold cursor-default" >{val.walletType + ": "}</h1>
                                                             </Tooltip> :
@@ -563,36 +645,27 @@ function UserInfo() {
                                             })}
                                         </div>
                                         <div className="flex flex-col">
-                                        <h1 className=" font-bold underline">Your Tokens</h1>
-                                        <div className="space-y-2 space-x-2 grid grid-cols-4 transition-all ">
-                                   
-                                        {user.tokens.map((val, index) => {
-                                            return (
-                                                <div onMouseEnter={() => setHoverAddress(val.ownerAddress)} onMouseLeave={() => setHoverAddress('')} className={` ${hoverAddress == val.ownerAddress ? `text-green-400 font-bold ${colorMode == 'light' ? 'border-green-600' : 'border-green-300'}` : ''} cursor-default border-2  p-2 transition-all`} key={index}>
-                                                    <h1>{val.tokenSymbol}</h1>
-                                                    <h1>{val.amtOwned <= 1000 ? val.amtOwned.toPrecision(3) : formatNumber(val.amtOwned)}</h1>
-                                                    <h1 className={` inline `}>{val.ownerAddress.substring(0, 4) + "..." + val.ownerAddress.slice(val.ownerAddress.length - 3)}</h1>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
+                                            <h1 className=" font-bold underline">Your Tokens</h1>
+                                            <div className="space-y-2 space-x-2 grid grid-cols-4 transition-all ">
+
+                                                {user.tokens.map((val, index) => {
+                                                    return (
+                                                        <div onMouseEnter={() => setHoverAddress(val.ownerAddress)} onMouseLeave={() => setHoverAddress('')} className={` ${hoverAddress == val.ownerAddress ? `text-green-400 font-bold ${colorMode == 'light' ? 'border-green-600' : 'border-green-300'}` : ''} cursor-default border-2  p-2 transition-all`} key={index}>
+                                                            <h1>{val.tokenSymbol}</h1>
+                                                            <h1>{val.amtOwned <= 1000 ? val.amtOwned.toPrecision(3) : formatNumber(val.amtOwned)}</h1>
+                                                            <h1 className={` inline `}>{val.ownerAddress.substring(0, 4) + "..." + val.ownerAddress.slice(val.ownerAddress.length - 3)}</h1>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
                                         </div>
-                                        
+
                                     </div>
 
                                 }
                                 <button onClick={async () => {
-                                    // get btc balance
                                     await detectTokens()
-                                    // const url = `https://api.blockcypher.com/v1/btc/main/addrs/`
-                                    // const testnet = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/eth/mainnet';
-                                    // const walletAddress = '0x5653bbb15dd5075ef9f0df9860cb54abfac48642';
 
-                                    // const web3 = new Web3(new Web3.providers.HttpProvider(testnet));
-                                    // var balance = await web3.eth.getBalance(walletAddress); //Will give value in.
-                                    // console.log(balance)
-                                    // balance = web3.utils.toDecimal(balance);
-                                    // console.log(balance)
                                 }} className={`${colorMode == 'light' ? 'bg-green-400 hover:bg-green-300' : 'bg-green-700 hover:bg-green-800'} p-2 font-bold m-3 border-2  rounded-md`}>Auto Detect Popular Tokens</button>
                                 <button onClick={() => setManuallyAddToken(!manuallyAddToken)} className={`${colorMode == 'light' ? `${manuallyAddToken ? 'bg-gray-400 hover:bg-green-300' : 'bg-green-400 hover:bg-green-300'}` : `${manuallyAddToken ? 'bg-gray-400 hover:bg-green-600' : 'bg-green-700 hover:bg-green-600'}`} m-3 p-2 font-bold  border-2  rounded-md`}>Detect Manually</button>
                                 <AnimatePresence>
