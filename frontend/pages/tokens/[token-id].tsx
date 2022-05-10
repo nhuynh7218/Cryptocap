@@ -1,9 +1,11 @@
 import axios from 'axios';
 import {subDays } from 'date-fns';
+import { DiscussionEmbed } from 'disqus-react';
 import dynamic from 'next/dynamic';
 // import Chart from '../../components/tokens/token-info';
 import { TokenInfo } from '../../interfaces/get';
 const Chart = dynamic(() => import('../../components/tokens/token-info'), {ssr: false})
+import { useRouter } from 'next/router'
 
 function Token(props: {
     tokenInfo: TokenInfo,
@@ -15,9 +17,19 @@ function Token(props: {
     route : string,
 }) {
  console.log(props)
+ const router = useRouter()
+ const ID = router.asPath
   return (
 
-        <Chart {...props}/>
+        <><Chart {...props} /><DiscussionEmbed
+      shortname='Cryptocap'
+      config={{
+        url: 'https://cryptocap.digital' + router.asPath,
+        identifier: 'cryptocap' + router.asPath,
+        title: 'cryptocap' + router.asPath,
+        language: 'eng'
+      }} />
+      </>
         
   
   )
