@@ -5,7 +5,7 @@ export interface StoredUserInfo {
     token_expiration: number
 }
 export interface UserToken {
-    chainID: string,
+    chainID: 'ETH' | 'BSC' | 'BTC',
     tokenAddress : string,
     tokenDecimal: number,
     tokenSupply: number,
@@ -14,6 +14,9 @@ export interface UserToken {
     amtOwned: number,
     tokenName: string,
     tokenSymbol: string,
+    coinGeckoChain: string,
+    rawTokenAddress: string,
+    
     
 }
 export interface Addresses {

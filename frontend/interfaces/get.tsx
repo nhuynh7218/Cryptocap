@@ -16,7 +16,6 @@ export interface ArticleInfo {
     votes: number
 }
 export interface TokenInfo {
-
     _id: string;
     ath: number;
     ath_change_percentage: number;
@@ -44,6 +43,12 @@ export interface TokenInfo {
     symbol: string;
     total_supply: number;
     total_volume: number;
+}
 
+export interface BasicTokenInfo {
+    name: string
+    marketcap: number
+    latestPrice: number
+    circulating_supply: number
 
 }

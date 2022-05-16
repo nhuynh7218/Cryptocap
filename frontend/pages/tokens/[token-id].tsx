@@ -3,12 +3,12 @@ import {subDays } from 'date-fns';
 import { DiscussionEmbed } from 'disqus-react';
 import dynamic from 'next/dynamic';
 // import Chart from '../../components/tokens/token-info';
-import { TokenInfo } from '../../interfaces/get';
+import { BasicTokenInfo, TokenInfo } from '../../interfaces/get';
 const Chart = dynamic(() => import('../../components/tokens/token-info'), {ssr: false})
 import { useRouter } from 'next/router'
 
 function Token(props: {
-    tokenInfo: TokenInfo,
+    basicTokenInfo: BasicTokenInfo,
     prices: {
         value: number;
         time: string;
@@ -58,7 +58,7 @@ export async function getServerSideProps(context: any) {
               } 
           })
           console.log(data)
-          return { props: {tokenInfo: {}, prices: data} }
+          return { props: {basicTokenInfo: null, prices: data} }
         } catch (error) {
             try {
                 const ticker = ctxParam.slice(2)
@@ -85,7 +85,7 @@ export async function getServerSideProps(context: any) {
                   } 
               })
          
-              return { props: {tokenInfo: {}, prices: data} }
+              return { props: {basicTokenInfo:null, prices: data} }
             } catch (error) {
                 return { redirect : { destination : '/404'}}
            
@@ -94,28 +94,39 @@ export async function getServerSideProps(context: any) {
         }
          
     } else {
-        const chainID = null
-        const contractAddress = null;
-        const url = `https://api.dev.dex.guru/v1/chain/56/tokens/0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c/market/history?begin_timestamp=1619246013`
-        const params = {
-            "api-key" : "XKFvppsvXO263n_ANhIeyaLkNmeOhnvpGCpNKHjhaqs"
+      try {
+        const p = ctxParam.split("_")
+        const coinGecko = p[0]
+        const tokenAddress = p[1]
+        const req = await axios.get<{prices: number[][], market_caps: number[][], total_volumes: number[][]}>(`https://api.coingecko.com/api/v3/coins/${coinGecko}/contract/${tokenAddress}/market_chart/?vs_currency=usd&days=365`)
+        const req2 = await axios.get(`https://api.coingecko.com/api/v3/coins/${coinGecko}/contract/${tokenAddress}`)
+        const data = req.data
+        const data2 = req2.data
+        console.log(coinGecko, tokenAddress)
+        const tokenInfo: BasicTokenInfo = {
+          marketcap : data.market_caps[data.market_caps.length - 1][1],
+          latestPrice : data.prices[data.market_caps.length - 1][1],
+          circulating_supply: data2["market_data"]["circulating_supply"],
+          name: data2["name"]
         }
-        const req = await axios.get(url, {params: params})
-        const data = req.data.data
-        const mapped = data.map((x : any) => {
-            return {
-                value: x.price_usd,
-                time: new Date(x.timestamp * 1000).toISOString().substring(0, 10)
-            }
-        })
-        return { props: {tokenInfo: {}, prices: mapped} }
+        var prices :  { value: number, time: string }[] | undefined = undefined
+        prices = data.prices.map((x : any) => { 
+            
+          return { 
+      
+            value: Number(x[1]), time: new Date(x[0]).toISOString().substring(0, 10)
+          } 
+      })
+        console.log(prices[prices.length-1])
+
+        return { props: {prices: prices, basicTokenInfo: tokenInfo} }
+      } catch (error) {
+        return { redirect : { destination : '/404'}}
+
+      }
+       
     }
   
-      
-      
-    
-  return {
-    props: {}, // will be passed to the page component as props
-  }
+
 }
 export default Token

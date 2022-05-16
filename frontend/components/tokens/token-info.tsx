@@ -6,21 +6,27 @@ import { useRouter } from "next/router"
 import React, { useRef } from "react"
 import { useEffect, useState } from "react"
 import { formatNumber } from "."
-import { TokenInfo } from "../../interfaces/get"
+import { BasicTokenInfo, TokenInfo } from "../../interfaces/get"
 import { APIService } from "../../services/APIService"
 
 
-function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: string }[] }) {
+function Chart(props: { basicTokenInfo: BasicTokenInfo, prices: { value: number, time: string }[] }) {
     const chartRef = useRef<HTMLDivElement>(null);
     var chart: IChartApi;
     const { colorMode, toggleColorMode } = useColorMode();
     const max = _.maxBy(props.prices, (x) => { return x.value })
     const min = _.minBy(props.prices, (x) => { return x.value })
-    const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null)
+    const [tokenInfo, setTokenInfo] = useState<BasicTokenInfo | null>(null)
     const [fetchingTokenInfo, setFetchingTokenInfo] = useState(false)
     const route = useRouter()
 
-    async function getTokenInfo() {
+    async function getTokenInfo(): Promise<BasicTokenInfo | void> {
+        if (props.basicTokenInfo !== null) { 
+            setTokenInfo(props.basicTokenInfo)
+            
+            return props.basicTokenInfo
+         }
+         console.log("client side fetching")
         setFetchingTokenInfo(true)
         const routeName = route.query["token-id"]
 
@@ -28,15 +34,24 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
             if (routeName.substring(0, 2) == "t-") {
                 const symbol = routeName.slice(2)
                 const tokens = await APIService.GetTokenBySymbol(symbol)
-                setTokenInfo(tokens)
+                const basicTokenInfo : BasicTokenInfo = {
+                    circulating_supply: tokens.circulating_supply ?? 0,
+                    latestPrice: tokens.current_price,
+                    marketcap: tokens.market_cap,
+                    name: tokens.name
+                }
+                setTokenInfo(basicTokenInfo)
                 setFetchingTokenInfo(false)
+                return basicTokenInfo
 
             }
         }
 
     }
     useEffect(() => {
-        getTokenInfo()
+        getTokenInfo().then((tokenInfo) =>{
+
+        
         function handleResize() {
 
             // Set window width/height to state
@@ -85,7 +100,7 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
             });
 
 
-            prepareChart(chart);
+            prepareChart(chart,tokenInfo!);
 
             // Add event listener
             window.addEventListener("resize", handleResize);
@@ -97,14 +112,16 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
             //   }).observe(chartRef.current);
 
         }
+        
         return () => window.removeEventListener("resize", handleResize);
+    })
     }, [])
     var s: ISeriesApi<"Area">
-    function prepareChart(chart: IChartApi) {
+    function prepareChart(chart: IChartApi,tokenInfo:BasicTokenInfo) {
         if (!chartRef.current) { return }
 
 
-        const oneYrHighMkCap = formatNumber(Number((Number(max?.value) * props.tokenInfo.circulating_supply).toFixed(2)))
+        const oneYrHighMkCap = formatNumber(Number((Number(max?.value) *  (tokenInfo ? tokenInfo.circulating_supply : 0)).toFixed(2)))
         const value = Number(max?.value ?? 0)
         var series = chart.addAreaSeries({
             bottomColor: colorMode == 'light' ? "#FFFFFF" : '#4b6a84',
@@ -135,10 +152,10 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
 
         setOneYearInfo({ highDate: businessDayToString(max?.time), marketcap: String(oneYrHighMkCap), highPrice: (value >= 1 ? value.toFixed(2) : value.toFixed(13)), highTitle: '1 Yr High', lowTitle: '1 Yr Low', lowPrice: (min?.value ?? 0) >= 1 ? min?.value.toFixed(2) : min?.value.toFixed(13), lowDate: businessDayToString(min?.time) })
 
-        var tokenName = props.tokenInfo.name
-        var tokenPrice = Number(props.tokenInfo.current_price)
+        var tokenName = tokenInfo.name
+        var tokenPrice = Number(tokenInfo.latestPrice)
         var today = businessDayToString(props.prices[props.prices.length - 1].time)
-        const mkcapRaw = props.tokenInfo.current_price * props.tokenInfo.circulating_supply
+        const mkcapRaw = tokenInfo.latestPrice * tokenInfo.circulating_supply
         var todayMarketCap = String(formatNumber(Number(mkcapRaw.toFixed(2))))
         var formattedPriceToday = tokenPrice >= 1 ? tokenPrice.toFixed(2) : tokenPrice.toFixed(13)
         setHoverInfo({ title: tokenName, price: formattedPriceToday, marketcap: todayMarketCap, date: today })
@@ -161,7 +178,7 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
                 const dateStr = businessDayToString(param.time);
                 var price = Number(param.seriesPrices.get(series));
                 var formattedPrice = price >= 1 ? price.toFixed(2) : price.toFixed(15)
-                var marketcap = props.tokenInfo.circulating_supply * price
+                var marketcap = tokenInfo.circulating_supply * price
                 setHoverInfo({ title: tokenName, price: formattedPrice, marketcap: String(formatNumber(Number(marketcap.toFixed(2)))), date: dateStr })
 
                 var coordinate = series.priceToCoordinate(price);
@@ -212,23 +229,27 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
     const [worth, setWorth] = useState(0)
     useEffect(() => {
         if (!tokenInfo ){return}
-        setBuyNowPrice(tokenInfo.current_price * stack)
+        setBuyNowPrice(tokenInfo.latestPrice * stack)
         if(!mkValueClac) { return }
-        const mkChange = mkValueClac / tokenInfo.market_cap
-        setWorth(mkChange * stack * tokenInfo.current_price)
+        const mkChange = mkValueClac / tokenInfo.marketcap
+        setWorth(mkChange * stack * tokenInfo.latestPrice)
 
 
     }, [stack, mkValueClac ])
     return (
         <div className="">
 
-            {loading && <div className=" w-10 h-10 ">
+            {loading || fetchingTokenInfo ? 
+            <div className=" w-full flex flex-col justify-center text-center items-center space-y-3">
 
-                <h1>loading!</h1>
+                    <Spinner className="mt-1"paddingTop='2px'thickness='3px'speed='0.65s'emptyColor='gray.200'color='blue.500'size='xl'/>
+                    <h1>Loading Chart</h1>
 
 
-            </div>}
-            <div className="" style={{ textAlign: 'center', width: '100%' }}>
+
+            </div> :
+            <div>
+ <div className="" style={{ textAlign: 'center', width: '100%' }}>
                 <h1 className=" font-extrabold pb-2 pt-2">Simple Chart</h1>
 
                 <h1 className=" font-extrabold pb-2  pt-2">Showing Daily Price for past 365 Days</h1>
@@ -261,24 +282,24 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
 
             </div>
             {!tokenInfo &&
-                <div className="flex flex-col justify-center text-center">
-                    <Spinner className="mt-1"paddingTop='2px'thickness='3px'speed='0.65s'emptyColor='gray.200'color='blue.500'size='sm'/>
+                <div className="flex flex-col justify-center text-center items-center">
+                    <Spinner className="mt-1"paddingTop='2px'thickness='3px'speed='0.65s'emptyColor='gray.200'color='blue.500'size='lg'/>
                     <h1>Loading Calculator</h1>
                 </div>
             }
             {tokenInfo && <div className="pb-6 cursor-default text-center font-bold text-lg">
 
                 <Tooltip label="Some calculation is made using ratio instead of supply, if max supply has not been reported. This means at any point xthe token may mint more of itself, thus diluting your position and render our calculation inaccurate.">Calculator</Tooltip>
-                <h1>{`Current Marketcap: ${formatNumber(tokenInfo.market_cap)}`}</h1>
+                <h1>{`Current Marketcap: ${formatNumber(tokenInfo.marketcap)}`}</h1>
                 <div className="text-center space-y-2 ">
                     <div>
                         <h1>{`If MKCap = `} <h1 className="inline text-green-500 font-bold">{`$${mkValueClac ? formatNumber(mkValueClac) : '?'}`}</h1></h1>
-                        <h1>{`You have `} <h1 className="inline text-green-500 font-bold">{`${formatNumber(stack)} `}</h1> <h1 className="inline">{`${tokenInfo?.symbol.toUpperCase()}`}</h1> </h1>
+                        <h1>{`You have `} <h1 className="inline text-green-500 font-bold">{`${formatNumber(stack)} `}</h1> <h1 className="inline">{`${tokenInfo?.name.toUpperCase()}`}</h1> </h1>
 
                     </div>
                     <div className=" space-x-4">
                     <input value={mkValueClac ?? ''} onChange={(x) => setMkValueCalc(Number(x.target.value) == 0 ? null : Number(x.target.value))} className="  focus:border-green-500 focus:border-2 focus:solid  font-black text-black p-2 rounded-md drop-shadow-md bg-gray-300 focus:bg-white" type="number" inputMode="numeric" pattern="[0-9]*" placeholder="Enter Market Cap" />
-                    <input value={stack == 0 ? '' : stack} onChange={(x) => setStack(Number(x.target.value))} className="  focus:border-green-500 focus:border-2 focus:solid font-black text-black p-2 rounded-md drop-shadow-md bg-gray-300 focus:bg-white" type="number" inputMode="numeric" pattern="[0-9]*" placeholder={`Enter Amount ${tokenInfo?.symbol.toUpperCase()}`} />
+                    <input value={stack == 0 ? '' : stack} onChange={(x) => setStack(Number(x.target.value))} className="  focus:border-green-500 focus:border-2 focus:solid font-black text-black p-2 rounded-md drop-shadow-md bg-gray-300 focus:bg-white" type="number" inputMode="numeric" pattern="[0-9]*" placeholder={`Enter Amount ${tokenInfo?.name.toUpperCase()}`} />
                     </div>
                     <div>
                         <h1>{`Buy Now Price `} <h1 className="inline text-green-500 font-bold">{`$${formatNumber(Number((buyNowprice).toFixed(8)))}`}</h1></h1>
@@ -299,6 +320,10 @@ function Chart(props: { tokenInfo: TokenInfo, prices: { value: number, time: str
                     </div> */}
                 </div>
             </div>}
+            </div>
+            
+            }
+           
         </div>
 
     )

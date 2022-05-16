@@ -29,6 +29,7 @@ import { AppState, APP_STATE } from '../../atom';
 import { useRecoilState } from 'recoil';
 import { APIService } from '../../services/APIService';
 import { StoredUserInfo } from '../../interfaces/user';
+import MobileNav from './mobilenav';
 
 
 
@@ -120,6 +121,17 @@ export default function NavBar() {
       setAddress(user?.attributes.ethAddress);
     }
   }, [isAuthenticated]);
+  const [isMobileNavHidden, toggleMobileNav] = useState(false);
+  // async function connectWallet() {
+  //     const auth = await authenticate()
+  //     console.log(user?.attributes);
+  // }
+  function togg() {
+
+      toggleMobileNav(!isMobileNavHidden)
+  }
+  const genericHamburgerLine = `h-1 w-5 my-0.5 rounded-full bg-white transition ease transform duration-300`;
+
   return (
     <>
       {address}
@@ -130,7 +142,30 @@ export default function NavBar() {
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
 
           <HStack spacing={8} alignItems={'center'}>
-            <Box className={'cursor-pointer'} onClick={() => { route.push('/') }}>CryptoCap</Box>
+            <button
+                    className=" flex flex-col md:hidden h-8 w-8 mt-1 ml-1 border-2  rounded justify-center items-center group"
+                    onClick={() => toggleMobileNav(!isMobileNavHidden)}
+                >
+                    <div
+                        className={`${genericHamburgerLine} ${isMobileNavHidden
+                            ? "rotate-45 translate-y-3 x group-hover:opacity-100"
+                            : "group-hover:opacity-100"
+                            }`}
+                    />
+                    <div
+                        className={`${genericHamburgerLine} ${isMobileNavHidden ? "opacity-0" : " group-hover:opacity-100"
+                            }`}
+                    />
+                    <div
+                        className={`${genericHamburgerLine} ${isMobileNavHidden
+                            ? "-rotate-45 -translate-y-3 group-hover:opacity-100"
+                            : " group-hover:opacity-100"
+                            }`}
+                    />
+                </button>
+                <Box className={'cursor-pointer'} onClick={() => { route.push('/') }}>CryptoCap</Box>
+
+         
             <HStack
               as={'nav'}
               spacing={4}
@@ -183,7 +218,11 @@ export default function NavBar() {
             </Stack>
           </Flex>
         </Flex>
+      
       </Box>
+      <AnimatePresence>
+                {isMobileNavHidden && <MobileNav scrollY={scrollY} isMobileMenuHidden={isMobileNavHidden} toggleMenu={togg} />}
+            </AnimatePresence>
     </>
   );
 }
