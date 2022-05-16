@@ -19,7 +19,6 @@ MongoDB_NAME = os.getenv('MongoDB_NAME')
 
 # Create a connection using MongoClient. You can import MongoClient or use pymongo.MongoClient
 client = MongoClient('mongodb+srv://' + MongoDB_USER + ':' + MongoDB_PASS + '@' + MongoDB_CLUSTER + '/frontend?retryWrites=true&w=majority')
-
 # call mongodb func
 db = client[MongoDB_NAME]
 
