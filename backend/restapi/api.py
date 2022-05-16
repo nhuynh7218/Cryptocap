@@ -405,7 +405,8 @@ def getUser(token:int):
     if request.method == 'POST':
         modified_count = collection_news.update_one(
             {"email": email},
-            { "$set": request.get_json()}
+            { "$set": request.get_json()},
+            {"upsert": 'true'}
         ).modified_count
 
         if (modified_count == 0):
