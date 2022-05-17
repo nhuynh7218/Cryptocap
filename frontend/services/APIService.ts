@@ -59,10 +59,18 @@ export class APIService {
         return data
     }
     static async GetUserInfo(token: string) : Promise<any> {
-        const req = await axios.get<any>(this.baseURL + "/user/"+token)
-        const data = req.data
-        console.log(data)
-        return data
+        try {
+            const req = await axios.get<any>(this.baseURL + "/user/"+token)
+            const data = req.data
+            if (data.msg == "Invalid token.") {
+                throw new Error(data.msg)
+            }
+            console.log(data)
+            return data
+        } catch (error: any) {
+            throw new Error(error)
+        }
+       
     }
     static async GetTokens(page: number, limit: number = 10) : Promise<{tokens: TokenInfo[], total : number}> {
         try {

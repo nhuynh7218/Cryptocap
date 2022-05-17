@@ -113,7 +113,7 @@ function UserInfo() {
 
     const [manuallyAddToken, setManuallyAddToken] = useState(false)
     const [fetchingPrices, setFetchingPrcies] = useState(false)
-    async function getNetworth() {
+    async function getNetworth(user: ExtendedUser) {
         setFetchingPrcies(true)
         let copy = _.cloneDeep(user)
         if (!copy) { 
@@ -155,16 +155,17 @@ function UserInfo() {
 
         let net = 0
         for (var tok of copy.tokens) {
-            tok.currentPrice = map.get(tok.rawTokenAddress) ?? 0
-            console.log(tok.rawTokenAddress,tok.currentPrice)
+            tok.currentPrice = map.get(tok.tokenAddress) ?? 0
             net += tok.currentPrice * tok.amtOwned
         }
+        console.log(copy)
         setNetWorth(net)
         setUser(copy)
         setFetchingPrcies(false)
 
 
     }
+    const [storedUserInfo, setStoredUserInfo] = useState<StoredUserInfo | undefined>(undefined)
     async function getUser() {
         setloading(true)
 
@@ -177,7 +178,7 @@ function UserInfo() {
             return
         }
         const storedUserInfo: StoredUserInfo = JSON.parse(localStorage);
-
+        setStoredUserInfo(storedUserInfo)
         const tokenExp = new Date(storedUserInfo.token_expiration)
         const diff = differenceInMilliseconds(tokenExp, new Date())
         if (diff <= 1000) {
@@ -186,16 +187,149 @@ function UserInfo() {
         }
 
         const token = storedUserInfo.token
-        // const latestUserInfo = await APIService.GetUserInfo(token)
+        
 
-        // setUser(latestUserInfo)
-        const updatedUser: User = {
-            email: 'aaa',
-            publicAddresses: [],
-            tokens: []
+        try {
+            let u: ExtendedUser = {
+                email : storedUserInfo.email,
+                tokens : [],
+                publicAddresses : []
+            }
+            const latestUserInfo = await APIService.GetUserInfo(token)
+            if (latestUserInfo.result.tokens !== undefined && latestUserInfo.result.publicAddresses !== undefined && (latestUserInfo.result.tokens.length !== 0 && latestUserInfo.result.publicAddresses.length !== 0)){
+                console.log("ooo", latestUserInfo)
+                u.email = latestUserInfo.result.email
+                u.tokens = latestUserInfo.result.tokens
+                u.publicAddresses = latestUserInfo.result.publicAddresses
+                console.log("hello", u)
+                setUser(u)
+                await updateTokens(u)
+                await save()
+            } else {
+                
+                setUser(u)
+            }
+            console.log(latestUserInfo)
+        } catch (error) {
+            console.log("Err", error)
+            // await logOut()
         }
-        setUser(updatedUser)
+        
+      
+
         setloading(false)
+    }
+    async function updateTokens(u: ExtendedUser){
+        setFetchingPrcies(true)
+        let deepClonedUser = _.cloneDeep(u)
+        let updatedTokens = []
+        const BSCURL = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/bsc/mainnet'
+        const BSCmainNet = new Web3(new Web3.providers.HttpProvider(BSCURL));
+
+        const ETHURL = 'https://speedy-nodes-nyc.moralis.io/e66559c94cdee13ce7bee4fa/eth/mainnet';
+        const ETHmainNet = new Web3(new Web3.providers.HttpProvider(ETHURL));
+        for await (var token of deepClonedUser.tokens) {
+            try {
+                let updatedToken = token
+                if (token.tokenAddress == 't-btc'){
+                    const req = await axios.get("https://api.blockcypher.com/v1/btc/main/addrs/" + token.ownerAddress)
+                    const data = req.data
+                    const bal = data['final_balance']
+                    const parsed = Number(bal) / Math.pow(10, 8)
+                    updatedToken.amtOwned = parsed
+                    updatedTokens.push(updatedToken)
+                } else if (token.tokenAddress == 't-eth') {
+                    var balance = await ETHmainNet.eth.getBalance(token.ownerAddress);
+                    const bal = Number(ETHmainNet.utils.fromWei(balance))
+                    if (bal <= 0) { continue }
+                    updatedToken.amtOwned = bal
+                    updatedTokens.push(updatedToken)
+                } else if (token.tokenAddress == 't-bnb'){
+                    var balance = await BSCmainNet.eth.getBalance(token.ownerAddress);
+                    const bal = Number(BSCmainNet.utils.fromWei(balance))
+                    if (bal <= 0) { continue }
+                    updatedToken.amtOwned = bal
+                    updatedTokens.push(updatedToken)
+                    
+                } else {
+                    if (token.chainID == 'BSC') {
+                        //@ts-ignore
+                        let contract = new BSCmainNet.eth.Contract(minABI, token.rawTokenAddress);
+    
+                        const balance = await contract.methods.balanceOf(token.ownerAddress).call();
+                        const decimals = await contract.methods.decimals().call();
+                        const amtParsed = Number(balance) / Math.pow(10, decimals)
+                        if (amtParsed <= 0) {
+                            console.log("no val", balance)
+                            continue
+                        }
+                        updatedToken.amtOwned = amtParsed
+                        updatedTokens.push(updatedToken)
+                    } else if(token.chainID == "ETH") {
+                        //@ts-ignore
+    
+                        let contract = new ETHmainNet.eth.Contract(minABI, token.rawTokenAddress);
+    
+                        const balance = await contract.methods.balanceOf(token.ownerAddress).call();
+                        const decimals = await contract.methods.decimals().call();
+                        const amtParsed = Number(balance) / Math.pow(10, decimals)
+                        if (amtParsed <= 0) {
+                            console.log("no val", balance)
+                            continue
+                        }
+                        updatedToken.amtOwned = amtParsed
+                        updatedTokens.push(updatedToken)
+                        
+                    }
+                }
+            } catch (error) {
+                console.log("eej", error)
+                continue
+            }
+           
+
+        }
+        deepClonedUser.tokens = updatedTokens
+        await getNetworth(deepClonedUser)
+        toast({
+            title: 'Updated!',
+            status: 'success',
+            position: "top",
+            duration: 1000,
+            isClosable: true,
+        })
+   
+    
+       
+        await getNetworth(deepClonedUser)
+        setFetchingPrcies(false)
+
+        
+    }
+    async function save() {
+        setAppState({ appState: APP_STATE.LOADING, title: '', msg: 'Saving...' })
+
+        try {
+            const req = await axios.post('https://api.cryptocap.digital/user/'+storedUserInfo?.token,user)
+            console.log(req.data)
+        } catch (error) {
+            toast({
+                title: 'Something went wrong, plz try again!',
+                status: 'error',
+                position: "top",
+                duration: 1000,
+                isClosable: true,
+            })
+        }
+        toast({
+            title: 'Saved!',
+            status: 'success',
+            position: "top",
+            duration: 1000,
+            isClosable: true,
+        })
+        setAppState({ appState: APP_STATE.NONE, title: '', msg: 'Saving...' })
+
     }
     async function addNewAddress(event: any) {
         if (!user) {
@@ -220,8 +354,8 @@ function UserInfo() {
                 const newUserToken: UserToken = {
                     chainID: "BTC",
                     ownerAddress: newAddress.publicAddress,
-                    rawTokenAddress: 't-BTC',
-                    tokenAddress: "t-BTC",
+                    rawTokenAddress: 't-btc',
+                    tokenAddress: "t-btc",
                     tokenDecimal: 8,
                     amtOwned: parsed,
                     tokenImg: '',
@@ -359,14 +493,14 @@ function UserInfo() {
                     }
                     let tokenAddy = newToken.tokenAddress
                     if (newToken.tokenAddress == '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56') {
-                        tokenAddy = "t-BUSD"
+                        tokenAddy = "t-busd"
                     }
                     const newUserToken: ExtendedUserToken = {
                         chainID: newToken.chainID,
                         ownerAddress: addy.publicAddress,
                         rawTokenAddress: newToken.tokenAddress.toLocaleLowerCase(),
                         tokenAddress: tokenAddy.toLocaleLowerCase(),
-                        tokenDecimal: decimals,
+                        tokenDecimal: Number(decimals),
                         amtOwned: amtParsed,
                         tokenImg: '',
                         tokenName: tokenName,
@@ -417,7 +551,7 @@ function UserInfo() {
                         ownerAddress: addy.publicAddress,
                         tokenAddress: newToken.tokenAddress.toLocaleLowerCase(),
                         rawTokenAddress: newToken.tokenAddress.toLocaleLowerCase(),
-                        tokenDecimal: decimals,
+                        tokenDecimal: Number(decimals),
                         amtOwned: amtParsed,
                         tokenImg: '',
                         tokenName: tokenName,
@@ -428,33 +562,6 @@ function UserInfo() {
                     }
                     tokens.push(newUserToken)
 
-                    // const deep = _.cloneDeep(user)
-                    // const index = deep?.tokens.findIndex((x) => x.tokenAddress == newUserToken.tokenAddress && x.ownerAddress == newUserToken.ownerAddress)
-                    // console.log(index)
-                    // if (index != undefined && index != -1) {
-                    //     deep?.tokens.splice(index, 1)
-                    // }
-                    // deep?.tokens.push(newUserToken)
-                    // setUser(deep)
-                    // if (index != undefined && index != -1) {
-                    //     toast({
-                    //         title: 'Token updated!',
-                    //         status: 'success',
-                    //         position: "top",
-                    //         duration: 1000,
-                    //         isClosable: true,
-                    //     })
-                    //     setAppState({ appState: APP_STATE.NONE, title: 'Adding address...', msg: '' })
-
-                    //     return
-                    // }
-                    // toast({
-                    //     title: 'Token detected and added!',
-                    //     status: 'success',
-                    //     position: "top",
-                    //     duration: 1000,
-                    //     isClosable: true,
-                    // })
                 } catch (error) {
                     console.log(error)
 
@@ -603,13 +710,14 @@ function UserInfo() {
                     }
                     const tokenName = await contract.methods.name().call();
                     const symbol = await contract.methods.symbol().call();
+                    let n = bscAddy
                     if (bscAddy == '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56') {
-                        bscAddy = "t-BUSD"
+                        n = "t-BUSD"
                     }
                     const newUserToken: UserToken = {
                         chainID: 'BSC',
                         ownerAddress: pubs.publicAddress,
-                        tokenAddress: bscAddy.toLocaleLowerCase(),
+                        tokenAddress: n.toLocaleLowerCase(),
                         rawTokenAddress: bscAddy.toLocaleLowerCase(),
                         tokenDecimal: decimals,
                         amtOwned: amtParsed,
@@ -696,7 +804,7 @@ function UserInfo() {
              }
              const unseen = []
  
-             for (var i = 0; i < seen.length-1; i++){
+             for (var i = 0; i < seen.length; i++){
                  if (!seen[i]) {
                      unseen.push(toks[i])
                  }
@@ -714,7 +822,6 @@ function UserInfo() {
             })
         
         setUser(deepClonedUser)
-
         setAppState({ appState: APP_STATE.NONE, title: '', msg: '' })
     }
     useEffect(() => {
@@ -739,7 +846,16 @@ function UserInfo() {
 
                             <h2 className="text-2xl font-bold">Account Information</h2>
                             <Divider borderColor={`${colorMode == 'light' ? 'black' : 'white'} ` } />
-                                {netWorth && <h1 className="font-bold drop-shadow-lg">{"Your Networth: $" + (netWorth > 999 ? formatNumber(netWorth) : netWorth.toPrecision(3))}</h1>}
+                                
+                                {netWorth && <div>
+                                    <h1 className="font-bold drop-shadow-lg">{"Your Networth: $" + (netWorth > 999 ? formatNumber(netWorth) : netWorth.toPrecision(3))}</h1>
+                                    {fetchingPrices ? 
+                                <Spinner className="mt-1" paddingTop='5px' thickness='3px' speed='0.65s' emptyColor='gray.200' color='blue.500' size='md' />
+                                :
+                                <button onClick={async () => updateTokens(user)} className={`mt-3  ${colorMode == 'light' ? 'bg-green-300 hover:bg-green-200' : 'bg-green-700 hover:bg-green-600'} p-2 px-4 rounded font-bold`}>Update</button>
+                                }
+                                </div> }
+
                             <Divider borderColor={`${colorMode == 'light' ? 'black' : 'white'} ` } />
 
                             <div className="flex flex-col">
@@ -796,7 +912,13 @@ function UserInfo() {
                                         <div className="flex flex-col">
                                             <div className="flex flex-row justify-between">
                                                 <h1 className=" font-bold underline">Your Tokens</h1>
-                                                {user.tokens.length > 0 && <button onClick={() => getNetworth()} className={`font-bold hover:underline border-1 p-2 rounded-md ${colorMode == 'light' ? 'bg-green-300' : 'bg-green-600'}`}>Get Prices</button>}
+                                                {user.tokens.length > 0 && 
+                                                    <div>
+                                                        {fetchingPrices ?  <Spinner className="mt-1" paddingTop='5px' thickness='3px' speed='0.65s' emptyColor='gray.200' color='blue.500' size='md' />
+: 
+                                                        <button onClick={() => getNetworth(user)} className={`font-bold hover:underline border-1 p-2 rounded-md ${colorMode == 'light' ? 'bg-green-300' : 'bg-green-600'}`}>Get Prices</button> }
+                                                    </div>
+                                                }
 
                                             </div>
                                             <div className="space-y-2 space-x-2 grid grid-cols-4 transition-all ">
@@ -871,7 +993,7 @@ function UserInfo() {
                             </div>
                             {true && 
     
-                                <button className={`mt-3  ${colorMode == 'light' ? 'bg-green-300 hover:bg-green-200' : 'bg-green-700 hover:bg-green-600'} p-2 px-4 rounded font-bold`}>Save</button>
+                                <button onClick={async() => await save()} className={`mt-3  ${colorMode == 'light' ? 'bg-green-300 hover:bg-green-200' : 'bg-green-700 hover:bg-green-600'} p-2 px-4 rounded font-bold`}>Save</button>
 
        
                             }

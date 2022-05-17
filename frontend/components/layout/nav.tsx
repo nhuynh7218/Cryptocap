@@ -130,7 +130,7 @@ export default function NavBar() {
 
       toggleMobileNav(!isMobileNavHidden)
   }
-  const genericHamburgerLine = `h-1 w-5 my-0.5 rounded-full bg-white transition ease transform duration-300`;
+  const genericHamburgerLine = ` h-1 w-5 my-0.5 rounded-full  transition ease transform duration-300`;
 
   return (
     <>
@@ -143,21 +143,21 @@ export default function NavBar() {
 
           <HStack spacing={8} alignItems={'center'}>
             <button
-                    className=" flex flex-col md:hidden h-8 w-8 mt-1 ml-1 border-2  rounded justify-center items-center group"
+                    className={`${colorMode !== 'light' ? 'border-white' :'border-black'} flex flex-col md:hidden h-8 w-8 mt-1 ml-1 border-2  rounded justify-center items-center group`}
                     onClick={() => toggleMobileNav(!isMobileNavHidden)}
                 >
                     <div
-                        className={`${genericHamburgerLine} ${isMobileNavHidden
+                        className={`${genericHamburgerLine} ${colorMode !== 'light' ? 'bg-white' :'bg-black'} ${isMobileNavHidden
                             ? "rotate-45 translate-y-3 x group-hover:opacity-100"
                             : "group-hover:opacity-100"
                             }`}
                     />
                     <div
-                        className={`${genericHamburgerLine} ${isMobileNavHidden ? "opacity-0" : " group-hover:opacity-100"
+                        className={`${genericHamburgerLine} ${colorMode !== 'light' ? 'bg-white' :'bg-black'} ${isMobileNavHidden ? "opacity-0" : " group-hover:opacity-100"
                             }`}
                     />
                     <div
-                        className={`${genericHamburgerLine} ${isMobileNavHidden
+                        className={`${genericHamburgerLine} ${colorMode !== 'light' ? 'bg-white' :'bg-black'} ${isMobileNavHidden
                             ? "-rotate-45 -translate-y-3 group-hover:opacity-100"
                             : " group-hover:opacity-100"
                             }`}
@@ -201,13 +201,13 @@ export default function NavBar() {
                     </div>
                   </div>
                   :
-                  <div className={`${colorMode == "light" ? ' bg-pink-400' : 'bg-pink-700'} hover:scale-105 transition-all rounded-2xl drop-shadow-lg h-13 p-2 mt-6`}>
+                  <div className={`${colorMode == "light" ? ' bg-pink-400' : 'bg-pink-700'} hover:scale-105 transition-all rounded sm:rounded-2xl drop-shadow-lg h-10 p-1.5 sm:h-12 sm:p-2 sm:mt-6 `}>
                     <button onClick={async () => { toggleShowAuthModal(true) }} className="">
 
-                      <h1 className="inline pt-1 font-bold  text-gray-100 hover:text-green-800 transition duration-300 ease-in-out  ">Connect Wallet</h1>
+                      <h1 className="inline pt-1 font-bold  text-gray-100 hover:text-green-800 transition duration-300 ease-in-out text-xs md:text-base ">Connect Wallet</h1>
 
 
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9 inline pl-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="hidden sm:inline h-9 w-9  pl-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </button>
