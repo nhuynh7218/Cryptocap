@@ -6,14 +6,7 @@ import { APIService } from "../../../services/APIService";
 
 function ArticleInfo(props : {article:ArticleInfo}) {
     return (
-        <><Article {...props} /><DiscussionEmbed
-            shortname='Cryptocap'
-            config={{
-                url: 'https://cryptocap.digital/news/article/' + props.article._id,
-                identifier: 'cryptocap' + props.article._id,
-                title: 'cryptocap' + props.article._id,
-                language: 'eng'	
-            }} /></>
+        <Article {...props} />
     )
 }
 export async function getServerSideProps(ctx: {params: any, req : Request, res: Response}) {
