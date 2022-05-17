@@ -165,7 +165,7 @@ export default function Article(props: {article: ArticleInfo}) {
             </div>}
         </div>
 
-      </div><div className="flex flex-col mx-48"><DiscussionEmbed
+      </div><div className=""><DiscussionEmbed
         shortname='Cryptocap'
         config={{
           url: 'https://cryptocap.digital/news/article/' + props.article._id,
