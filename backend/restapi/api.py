@@ -177,7 +177,7 @@ def deleteNews(newsid:int):
     }
 
 # UPDATE NEWS ARTICLE BY ID
-@app.route('/news/<newsid>', methods = [ 'PATCH', 'PUT' ])
+@app.route('/news/<newsid>', methods = ['PATCH', 'PUT' ])
 def updateNews(newsid:int):
     modified_count = collection_news.update_one(
         {"_id": ObjectId(newsid)},
@@ -403,14 +403,14 @@ def getUser(token:int):
         }
 
     if request.method == 'POST':
-        modified_count = collection_news.update_one(
-            {"email": email},
-            { "$set": request.get_json()},
-            {"upsert": 'true'}
+        modified_count = collection_users.update_one(
+            {'email': email},
+            {'$set': request.get_json()},
+            upsert=True
         ).modified_count
 
         if (modified_count == 0):
-            return {"msg" : "User does not exists with the given id"}
+            return {"msg" : "No data was updated"}
         return {"msg" : "User Updated Successfully"}
 
 # DELETE USER BY ID
