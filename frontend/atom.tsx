@@ -9,12 +9,12 @@ import {atom, selector, useRecoilValue, useSetRecoilState} from 'recoil'
 // }
 export interface UserInfo {
   walletTx: string | null,
-  caboBalance: number | null,
+
 }
 
 export const UserAtom =  atom<UserInfo>({
     key: "UserAtom",
-    default: {walletTx : null, caboBalance: null}
+    default: {walletTx : null}
 });
 export enum APP_STATE {
     LOADING, SUCCESS, ERROR, CONFIRM, NONE,NOTFOUND, MODAL

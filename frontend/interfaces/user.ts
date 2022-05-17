@@ -6,7 +6,7 @@ export interface StoredUserInfo {
 }
 export interface UserToken {
     chainID: 'ETH' | 'BSC' | 'BTC',
-    tokenAddress : string,
+    tokenAddress : 't-btc' | 't-eth' | 't-bnb' | string,
     tokenDecimal: number,
     tokenSupply: number,
     tokenImg: string,

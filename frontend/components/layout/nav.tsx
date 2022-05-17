@@ -17,6 +17,7 @@ import {
   Center,
   HStack,
   Divider,
+  useToast,
 } from '@chakra-ui/react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
@@ -130,7 +131,7 @@ export default function NavBar() {
 
       toggleMobileNav(!isMobileNavHidden)
   }
-  const genericHamburgerLine = `h-1 w-5 my-0.5 rounded-full bg-white transition ease transform duration-300`;
+  const genericHamburgerLine = ` h-1 w-5 my-0.5 rounded-full  transition ease transform duration-300`;
 
   return (
     <>
@@ -143,21 +144,21 @@ export default function NavBar() {
 
           <HStack spacing={8} alignItems={'center'}>
             <button
-                    className=" flex flex-col md:hidden h-8 w-8 mt-1 ml-1 border-2  rounded justify-center items-center group"
+                    className={`${colorMode !== 'light' ? 'border-white' :'border-black'} flex flex-col md:hidden h-8 w-8 mt-1 ml-1 border-2  rounded justify-center items-center group`}
                     onClick={() => toggleMobileNav(!isMobileNavHidden)}
                 >
                     <div
-                        className={`${genericHamburgerLine} ${isMobileNavHidden
+                        className={`${genericHamburgerLine} ${colorMode !== 'light' ? 'bg-white' :'bg-black'} ${isMobileNavHidden
                             ? "rotate-45 translate-y-3 x group-hover:opacity-100"
                             : "group-hover:opacity-100"
                             }`}
                     />
                     <div
-                        className={`${genericHamburgerLine} ${isMobileNavHidden ? "opacity-0" : " group-hover:opacity-100"
+                        className={`${genericHamburgerLine} ${colorMode !== 'light' ? 'bg-white' :'bg-black'} ${isMobileNavHidden ? "opacity-0" : " group-hover:opacity-100"
                             }`}
                     />
                     <div
-                        className={`${genericHamburgerLine} ${isMobileNavHidden
+                        className={`${genericHamburgerLine} ${colorMode !== 'light' ? 'bg-white' :'bg-black'} ${isMobileNavHidden
                             ? "-rotate-45 -translate-y-3 group-hover:opacity-100"
                             : " group-hover:opacity-100"
                             }`}
@@ -201,13 +202,13 @@ export default function NavBar() {
                     </div>
                   </div>
                   :
-                  <div className={`${colorMode == "light" ? ' bg-pink-400' : 'bg-pink-700'} hover:scale-105 transition-all rounded-2xl drop-shadow-lg h-13 p-2 mt-6`}>
+                  <div className={`${colorMode == "light" ? ' bg-pink-400' : 'bg-pink-700'} hover:scale-105 transition-all rounded sm:rounded-2xl drop-shadow-lg h-10 p-1.5 sm:h-12 sm:p-2 sm:mt-6 `}>
                     <button onClick={async () => { toggleShowAuthModal(true) }} className="">
 
-                      <h1 className="inline pt-1 font-bold  text-gray-100 hover:text-green-800 transition duration-300 ease-in-out  ">Connect Wallet</h1>
+                      <h1 className="inline pt-1 font-bold  text-gray-100 hover:text-green-800 transition duration-300 ease-in-out text-xs md:text-base ">Connect Wallet</h1>
 
 
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9 inline pl-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="hidden sm:inline h-9 w-9  pl-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </button>
@@ -341,6 +342,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
     const [confirmPassword, setConfirmPassword] = useState<string>('')
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
     const [currentAppState, setAppState] = useRecoilState(AppState);
+    const toast = useToast()
 
     async function SignUp(event: any) {
       
@@ -349,7 +351,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
       const info = await APIService.SignUp(email, password)
       
 
-      if (info.msg == "User successfully added!") {
+      if (info.msg == "Logged in successfully.") {
         const user: StoredUserInfo = {
           email: info.result.email,
           token_expiration: info.token_expiration,
@@ -365,13 +367,28 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
         return
       }
       if (info.msg == 'That email already exists!') {
-        setErrorMsg('That email already exists!')
+        toast({
+          title: info.msg,
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })     
+      setErrorMsg('That email already exists!')
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
       }
-      if (info.msg !== "User successfully added!") {
-        setErrorMsg('An error has occured')
+      if (info.msg !== "Logged in successfully.") {
+        toast({
+          title: 'Maybe server error',
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })     
+      setErrorMsg('That email already exists!')
+
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
@@ -380,9 +397,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
     }
     return (
       <form onSubmit={(e) => SignUp(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
-        {errorMsg &&
-          <h1 className='text-red-500 font-bold'>{errorMsg}</h1>
-        }
+     
         <input required value={email} onChange={(input) => setEmail(input.target.value)} type="email" className={`${errorMsg == 'That email already exists!' ? 'border-red-500' : email == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Email...'></input>
         <input required value={confirmEmail} onChange={(input) => setConfirmEmail(input.target.value)} type="email" className={`${errorMsg == 'That email already exists!' ? 'border-red-500' : confirmEmail == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Confirm Email...'></input>
         <input required value={password} onChange={(input) => setPassword(input.target.value)} type="password" className={`${password == '' ? 'border-gray-500' : password == confirmPassword ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Password...'></input>
@@ -395,13 +410,13 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
   function LogIn(props : { setUserInfo: (u: StoredUserInfo) => void, toggleActive: (b: boolean) => void}) {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
-    const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined)
     const [currentAppState, setAppState] = useRecoilState(AppState);
-
-    async function LogIn(event: any) {
+    const toast = useToast()
+    async function loginn(event: any) {
       setAppState({appState: APP_STATE.LOADING, title: 'Logging You In...', msg: ''})
       event.preventDefault()
       const info = await APIService.LogIn(email, password)
+      console.log("sss", info)
       if (info.msg == "Logged in successfully.") {
       
         const user: StoredUserInfo = {
@@ -420,14 +435,26 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
         return
       }
       if (info.msg == 'User not found.') {
-        setErrorMsg('User not found.')
-        setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
+        toast({
+          title: info.msg,
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })        
+      setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
 
       }
       if (info.msg !== "Logged in successfully.") {
-        setErrorMsg('An error has occured')
+        toast({
+          title: 'Maybe server error',
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })  
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
@@ -435,10 +462,8 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
  
     }
     return (
-      <form onSubmit={(e) => LogIn(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
-        {errorMsg &&
-          <h1 className='text-red-500 font-bold'>{errorMsg}</h1>
-        }
+      <form onSubmit={(e) => loginn(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
+      
         <input required value={email} onChange={(input) => setEmail(input.target.value)} type="email" className={`${email !== '' ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Email...'></input>
         <input required value={password} onChange={(input) => setPassword(input.target.value)} type="password" className={`${password !== '' ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Password...'></input>
         <button type="submit" className={`${(email !== '' && password !== '') ? 'hover:bg-green-700 bg-green-600' : 'hover:cursor-not-allowed'} ${colorMode == 'light' ? 'font-black' : 'font-bold text-white'} rounded border-2 py-2`}>Sign In</button>
