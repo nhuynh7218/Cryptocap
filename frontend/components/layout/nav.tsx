@@ -398,10 +398,11 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
     const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined)
     const [currentAppState, setAppState] = useRecoilState(AppState);
 
-    async function LogIn(event: any) {
+    async function loginn(event: any) {
       setAppState({appState: APP_STATE.LOADING, title: 'Logging You In...', msg: ''})
       event.preventDefault()
       const info = await APIService.LogIn(email, password)
+      console.log("sss", info)
       if (info.msg == "Logged in successfully.") {
       
         const user: StoredUserInfo = {
@@ -435,7 +436,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
  
     }
     return (
-      <form onSubmit={(e) => LogIn(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
+      <form onSubmit={(e) => loginn(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
         {errorMsg &&
           <h1 className='text-red-500 font-bold'>{errorMsg}</h1>
         }

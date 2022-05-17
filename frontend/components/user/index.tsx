@@ -204,7 +204,17 @@ function UserInfo() {
                 console.log("hello", u)
                 setUser(u)
                 await updateTokens(u)
-                await save()
+                setTimeout(async() => {
+                    try {
+                        await axios.post('https://api.cryptocap.digital/user/'+storedUserInfo.token,user)
+                    console.log("successfully saved")
+                    } catch (error) {
+                        console.log("err saved")
+
+                    }
+
+                }, 2000);
+
             } else {
                 
                 setUser(u)
