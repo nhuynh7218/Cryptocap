@@ -17,6 +17,7 @@ import {
   Center,
   HStack,
   Divider,
+  useToast,
 } from '@chakra-ui/react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
@@ -341,6 +342,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
     const [confirmPassword, setConfirmPassword] = useState<string>('')
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
     const [currentAppState, setAppState] = useRecoilState(AppState);
+    const toast = useToast()
 
     async function SignUp(event: any) {
       
@@ -349,7 +351,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
       const info = await APIService.SignUp(email, password)
       
 
-      if (info.msg == "User successfully added!") {
+      if (info.msg == "Logged in successfully.") {
         const user: StoredUserInfo = {
           email: info.result.email,
           token_expiration: info.token_expiration,
@@ -365,13 +367,28 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
         return
       }
       if (info.msg == 'That email already exists!') {
-        setErrorMsg('That email already exists!')
+        toast({
+          title: info.msg,
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })     
+      setErrorMsg('That email already exists!')
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
       }
-      if (info.msg !== "User successfully added!") {
-        setErrorMsg('An error has occured')
+      if (info.msg !== "Logged in successfully.") {
+        toast({
+          title: 'Maybe server error',
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })     
+      setErrorMsg('That email already exists!')
+
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
@@ -380,9 +397,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
     }
     return (
       <form onSubmit={(e) => SignUp(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
-        {errorMsg &&
-          <h1 className='text-red-500 font-bold'>{errorMsg}</h1>
-        }
+     
         <input required value={email} onChange={(input) => setEmail(input.target.value)} type="email" className={`${errorMsg == 'That email already exists!' ? 'border-red-500' : email == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Email...'></input>
         <input required value={confirmEmail} onChange={(input) => setConfirmEmail(input.target.value)} type="email" className={`${errorMsg == 'That email already exists!' ? 'border-red-500' : confirmEmail == '' ? 'border-gray-500' : email == confirmEmail ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Confirm Email...'></input>
         <input required value={password} onChange={(input) => setPassword(input.target.value)} type="password" className={`${password == '' ? 'border-gray-500' : password == confirmPassword ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Password...'></input>
@@ -395,9 +410,8 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
   function LogIn(props : { setUserInfo: (u: StoredUserInfo) => void, toggleActive: (b: boolean) => void}) {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
-    const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined)
     const [currentAppState, setAppState] = useRecoilState(AppState);
-
+    const toast = useToast()
     async function loginn(event: any) {
       setAppState({appState: APP_STATE.LOADING, title: 'Logging You In...', msg: ''})
       event.preventDefault()
@@ -421,14 +435,26 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
         return
       }
       if (info.msg == 'User not found.') {
-        setErrorMsg('User not found.')
-        setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
+        toast({
+          title: info.msg,
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })        
+      setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
 
       }
       if (info.msg !== "Logged in successfully.") {
-        setErrorMsg('An error has occured')
+        toast({
+          title: 'Maybe server error',
+          status: 'error',
+          position: "top",
+          duration: 2000,
+          isClosable: true,
+      })  
         setAppState({appState: APP_STATE.NONE, title: '', msg: ''})
 
         return
@@ -437,9 +463,7 @@ function AuthenticateModal(props: { isActived: boolean, toggleActive: (state: bo
     }
     return (
       <form onSubmit={(e) => loginn(e)} className='flex flex-col space-y-2 pt-2 text-black px-8 '>
-        {errorMsg &&
-          <h1 className='text-red-500 font-bold'>{errorMsg}</h1>
-        }
+      
         <input required value={email} onChange={(input) => setEmail(input.target.value)} type="email" className={`${email !== '' ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Email...'></input>
         <input required value={password} onChange={(input) => setPassword(input.target.value)} type="password" className={`${password !== '' ? 'border-green-600' : 'border-red-500'} border-4 px-1 p-1 rounded`} placeholder='Password...'></input>
         <button type="submit" className={`${(email !== '' && password !== '') ? 'hover:bg-green-700 bg-green-600' : 'hover:cursor-not-allowed'} ${colorMode == 'light' ? 'font-black' : 'font-bold text-white'} rounded border-2 py-2`}>Sign In</button>
