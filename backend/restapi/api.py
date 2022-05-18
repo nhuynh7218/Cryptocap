@@ -75,6 +75,14 @@ def getAllNews():
         
     news = collection_news.find().sort("published", order).skip(page_limit * (page - 1)).limit(page_limit)
 
+    # news1 = collection_news.find().sort("published", order)
+    # BitcoinMagazine
+    # Crypto
+    # CryptoBoomNews
+    # userTwitter = ['Cointelegraph','Crypto', 'CryptoBoomNews', 'BitcoinMagazine']
+    # if n['source'] in userTwitter: 
+    #     continue
+    
     news_list = []
     for n in news:
         n['_id'] = str(n['_id'])
@@ -169,7 +177,7 @@ def deleteNews(newsid:int):
     }
 
 # UPDATE NEWS ARTICLE BY ID
-@app.route('/news/<newsid>', methods = [ 'PATCH', 'PUT' ])
+@app.route('/news/<newsid>', methods = ['PATCH', 'PUT' ])
 def updateNews(newsid:int):
     modified_count = collection_news.update_one(
         {"_id": ObjectId(newsid)},
@@ -372,27 +380,38 @@ def indexUser():
         return {"msg"  : 'You are logged in as ' + session['token']}
     return {"msg"  : "No user session found. Welcome, visitor!"}
 
-
 ''' -----------  /user/:token  ----------- '''
 # GET USER BY ID
-@app.route('/user/<token>', methods = ['GET'])
+@app.route('/user/<token>', methods = ['GET', 'POST'])
 def getUser(token:int):
+
     data = jwt.decode(token, APP_SECRET_KEY, algorithms=['HS256'])
     email = data['email']
     user = collection_users.find_one({"email" : email})
     if (user is None):
         return {'msg' : "Invalid token."}
-    
-    # return user array
-    user = collection_users.find_one({"email" : email})
-    remove_key = user.pop("password", None)
-    user['_id'] = str(user['_id'])
-    return {
-        "msg"  : "Success",
-        "result" : user,
-        "token_expiration": data['exp']
-    }
 
+    if request.method == 'GET':
+        # return user array
+        user = collection_users.find_one({"email" : email})
+        remove_key = user.pop("password", None)
+        user['_id'] = str(user['_id'])
+        return {
+            "msg"  : "Success",
+            "result" : user,
+            "token_expiration": data['exp']
+        }
+
+    if request.method == 'POST':
+        modified_count = collection_users.update_one(
+            {'email': email},
+            {'$set': request.get_json()},
+            upsert=True
+        ).modified_count
+
+        if (modified_count == 0):
+            return {"msg" : "No data was updated"}
+        return {"msg" : "User Updated Successfully"}
 
 # DELETE USER BY ID
 @app.route('/user/<userid>', methods = ['DELETE'])
